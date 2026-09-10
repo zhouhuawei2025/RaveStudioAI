@@ -29,7 +29,7 @@
         <TabControl Grid.Row="1" Style="{StaticResource TabControlInLine}">
             <TabItem Header="数据查询">
                 <Grid Margin="8">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="250"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="250"/><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="4,4,16,4">
                             <TextBlock Text="试验" FontWeight="Bold"/>
@@ -37,10 +37,12 @@
                             <TextBlock Text="环境" FontWeight="Bold"/>
                             <TextBox x:Name="EnvironmentTextBox" Margin="0,6,0,12"/>
                             <DockPanel><TextBlock Text="受试者" FontWeight="Bold"/><Button Content="全选/取消" DockPanel.Dock="Right" Click="ToggleSubjects_Click"/></DockPanel>
+                            <TextBox x:Name="SubjectSearchTextBox" Margin="0,6,0,0" ToolTip="输入受试者编号筛选" TextChanged="SubjectSearchTextBox_TextChanged"/>
                             <ListBox x:Name="SubjectListBox" Height="190" Margin="0,6,0,12">
                                 <ListBox.ItemTemplate><DataTemplate><CheckBox Content="{Binding SubjectKey}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/></DataTemplate></ListBox.ItemTemplate>
                             </ListBox>
                             <DockPanel><TextBlock Text="表单" FontWeight="Bold"/><Button Content="全选/取消" DockPanel.Dock="Right" Click="ToggleForms_Click"/></DockPanel>
+                            <TextBox x:Name="FormSearchTextBox" Margin="0,6,0,0" ToolTip="输入 FormOID 筛选" TextChanged="FormSearchTextBox_TextChanged"/>
                             <ListBox x:Name="FormListBox" Height="190" Margin="0,6,0,12">
                                 <ListBox.ItemTemplate><DataTemplate><CheckBox Content="{Binding FormName}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/></DataTemplate></ListBox.ItemTemplate>
                             </ListBox>
@@ -48,13 +50,32 @@
                             <Button x:Name="DownloadButton" Content="查询数据" Margin="0,12,0,0" Padding="12,7" Click="Download_Click"/>
                         </StackPanel>
                     </ScrollViewer>
-                    <Grid Grid.Column="1">
-                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Grid.Column="1" Margin="0,4,14,4">
+                        <TextBlock Text="历史查询" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <TextBlock Text="双击可按原条件重新查询" Foreground="#6C7892" Margin="0,0,0,8"/>
+                        <ListBox x:Name="HistoryListBox" MouseDoubleClick="HistoryListBox_MouseDoubleClick">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="2,5">
+                                        <TextBlock Text="{Binding HistoryName}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Summary}" Foreground="#6C7892" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock x:Name="DownloadStatusText" Text="请先连接 RWS" VerticalAlignment="Center"/>
                             <Button Content="导出 Excel" DockPanel.Dock="Right" Padding="12,5" Click="ExportData_Click"/>
                         </DockPanel>
-                        <DataGrid x:Name="DataGrid" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True" EnableColumnVirtualization="True"/>
+                        <DockPanel Grid.Row="1" Margin="0,0,0,8">
+                            <Button Content="清空筛选" DockPanel.Dock="Right" Padding="12,5" Margin="8,0,0,0" Click="ClearDatasetFilter_Click"/>
+                            <Button Content="筛选" DockPanel.Dock="Right" Padding="12,5" Click="ApplyDatasetFilter_Click"/>
+                            <TextBox x:Name="DatasetFilterTextBox" ToolTip="示例：AEYN = '1' and AESEV in ('1','2')"/>
+                        </DockPanel>
+                        <DataGrid x:Name="DataGrid" Grid.Row="2" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True" EnableColumnVirtualization="True"/>
                     </Grid>
                 </Grid>
             </TabItem>

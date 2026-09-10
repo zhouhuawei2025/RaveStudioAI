@@ -7,6 +7,8 @@ using System.Data;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 
 namespace RaveStudioAI.Pages;
 
@@ -19,6 +21,7 @@ public partial class RwsPage : UserControl
     private readonly ObservableCollection<Subject> _subjects = [];
     private readonly ObservableCollection<Form> _forms = [];
     private readonly ObservableCollection<QueryRow> _queries = [];
+    private readonly ObservableCollection<History> _history = [];
     private RwsProfileFile _configuration = new();
     private RwsTenantProfile? _tenantProfile;
     private List<RaveDatasetRow> _rows = [];
@@ -31,6 +34,8 @@ public partial class RwsPage : UserControl
         SubjectListBox.ItemsSource = _subjects;
         FormListBox.ItemsSource = _forms;
         QueryDataGrid.ItemsSource = _queries;
+        HistoryListBox.ItemsSource = _history;
+        ConfigureListFilters();
         LoadProfiles();
     }
 
@@ -56,7 +61,7 @@ public partial class RwsPage : UserControl
         PasswordBox.Password = profile.Password;
         var first = FirstStudyConfiguration(profile);
         ConfiguredStudyTextBox.Text = first?.Study ?? string.Empty;
-        EnvironmentTextBox.Text = first?.Environment ?? string.Empty;
+        EnvironmentTextBox.Text = DisplayEnvironment(first?.Environment);
         ConfiguredFormsTextBox.Text = string.Join(Environment.NewLine, first?.Forms ?? []);
         LoadConfiguredForms(first?.Forms);
         _loadingProfile = false;
@@ -80,7 +85,7 @@ public partial class RwsPage : UserControl
         profile.Username = UsernameTextBox.Text.Trim();
         profile.Password = PasswordBox.Password;
         var studyOid = ConfiguredStudyTextBox.Text.Trim();
-        var environment = EnvironmentTextBox.Text.Trim();
+        var environment = NormalizeEnvironment(EnvironmentTextBox.Text);
         if (!string.IsNullOrWhiteSpace(studyOid))
         {
             var studyKey = profile.Studies.Keys.FirstOrDefault(x => x.Equals(studyOid, StringComparison.OrdinalIgnoreCase)) ?? studyOid;
@@ -122,7 +127,7 @@ public partial class RwsPage : UserControl
     private async void StudyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_loadingProfile || StudyComboBox.SelectedItem is not Study study || !ValidateCredentials(false)) return;
-        EnvironmentTextBox.Text = study.Environment;
+        EnvironmentTextBox.Text = DisplayEnvironment(study.Environment);
         ConfiguredStudyTextBox.Text = study.ProtocolName;
         var configuredForms = FindStudyConfiguration(study);
         ConfiguredFormsTextBox.Text = string.Join(Environment.NewLine, configuredForms ?? []);
@@ -132,6 +137,8 @@ public partial class RwsPage : UserControl
             var subjects = await _service.GetSubjectsAsync(TenantTextBox.Text.Trim(), UsernameTextBox.Text.Trim(),
                 PasswordBox.Password, study.ProtocolName, study.Environment);
             Replace(_subjects, subjects);
+            SubjectSearchTextBox.Clear();
+            FormSearchTextBox.Clear();
             LoadConfiguredForms(configuredForms);
             DownloadStatusText.Text = $"已加载 {_subjects.Count} 个受试者、{_forms.Count} 个表单";
             if (_forms.Count == 0)
@@ -156,7 +163,14 @@ public partial class RwsPage : UserControl
             return;
         }
 
+        await RunDatasetQueryAsync(study, subjects, forms, DatasetType(), true);
+    }
+
+    private async Task RunDatasetQueryAsync(Study study, IReadOnlyList<string> subjects, IReadOnlyList<string> forms,
+        string datasetType, bool addHistory)
+    {
         _rows = [];
+        DatasetFilterTextBox.Clear();
         var total = subjects.Count * forms.Count;
         var completed = 0;
         SetBusy(true);
@@ -167,20 +181,93 @@ public partial class RwsPage : UserControl
             {
                 DownloadStatusText.Text = $"正在查询 {++completed}/{total}：{subject} · {form}";
                 var batch = await _service.DownloadSubjectFormRowsAsync(TenantTextBox.Text.Trim(), UsernameTextBox.Text.Trim(),
-                    PasswordBox.Password, study.ProtocolName, study.Environment, subject, form, DatasetType());
+                    PasswordBox.Password, study.ProtocolName, study.Environment, subject, form, datasetType);
                 _rows.AddRange(batch);
             }
-            DataGrid.ItemsSource = BuildTable(_rows).DefaultView;
+            ShowRows(_rows);
             DownloadStatusText.Text = $"查询完成：{_rows.Count} 行";
+            if (addHistory)
+            {
+                _history.Insert(0, new History
+                {
+                    HistoryId = Guid.NewGuid().ToString(),
+                    HistoryName = $"{DateTime.Now:HH:mm:ss}_{study.ProtocolName}_{(string.IsNullOrWhiteSpace(study.Environment) ? "Prod" : study.Environment)}_{datasetType}",
+                    TenantName = TenantTextBox.Text.Trim(), StudyName = study.DisplayName, Project = study.ProtocolName,
+                    Environment = study.Environment, DataType = datasetType,
+                    SubjectKeys = subjects.ToList(), FormNames = forms.ToList()
+                });
+            }
             LogManager.Write(LogCategory.Rws, "download.log", $"{study.DisplayName} 查询完成：{_rows.Count} 行");
+            Notice.Success($"查询完成，共 {_rows.Count} 行。");
         }
         catch (Exception ex)
         {
-            DataGrid.ItemsSource = BuildTable(_rows).DefaultView;
+            ShowRows(_rows);
             ShowError($"查询中断，已保留 {_rows.Count} 行", ex);
         }
         finally { SetBusy(false); }
     }
+
+    private async void HistoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (HistoryListBox.SelectedItem is not History history) return;
+        if (!history.TenantName.Equals(TenantTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            Notice.Warning($"该记录属于租户 {history.TenantName}，请先切换租户配置。");
+            return;
+        }
+        var study = _studies.FirstOrDefault(x =>
+            x.ProtocolName.Equals(history.Project, StringComparison.OrdinalIgnoreCase) &&
+            x.Environment.Equals(history.Environment, StringComparison.OrdinalIgnoreCase));
+        if (study is null)
+        {
+            Notice.Warning("当前已连接的试验列表中找不到该历史试验。");
+            return;
+        }
+        await RunDatasetQueryAsync(study, history.SubjectKeys, history.FormNames, history.DataType, false);
+    }
+
+    private void SubjectSearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+        CollectionViewSource.GetDefaultView(_subjects).Refresh();
+
+    private void FormSearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+        CollectionViewSource.GetDefaultView(_forms).Refresh();
+
+    private void ConfigureListFilters()
+    {
+        CollectionViewSource.GetDefaultView(_subjects).Filter = item => item is Subject subject &&
+            (string.IsNullOrWhiteSpace(SubjectSearchTextBox.Text) ||
+             subject.SubjectKey.Contains(SubjectSearchTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
+        CollectionViewSource.GetDefaultView(_forms).Filter = item => item is Form form &&
+            (string.IsNullOrWhiteSpace(FormSearchTextBox.Text) ||
+             form.FormName.Contains(FormSearchTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ApplyDatasetFilter_Click(object sender, RoutedEventArgs e)
+    {
+        var expression = DatasetFilterTextBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(expression)) { ShowRows(_rows); return; }
+        if (_rows.Count == 0) { Notice.Warning("当前没有可筛选的数据。"); return; }
+        try
+        {
+            var fields = new[] { "StudyOID", "Subject", "SubjectKey", "SiteOID", "FolderOID", "StudyEventOID",
+                "FolderRepeatKey", "StudyEventRepeatKey", "FormOID", "FormRepeatKey", "ItemGroupOID", "RecordPosition", "ItemGroupRepeatKey" }
+                .Concat(_rows.SelectMany(x => x.Values.Keys)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var predicate = DatasetWhereFilter.Parse(expression, fields);
+            var filtered = _rows.Where(predicate).ToList();
+            ShowRows(filtered);
+            Notice.Success($"筛选完成：{filtered.Count} 行。");
+        }
+        catch (Exception ex) { Notice.Error(UserMessage(ex)); }
+    }
+
+    private void ClearDatasetFilter_Click(object sender, RoutedEventArgs e)
+    {
+        DatasetFilterTextBox.Clear();
+        ShowRows(_rows);
+    }
+
+    private void ShowRows(IReadOnlyList<RaveDatasetRow> rows) => DataGrid.ItemsSource = BuildTable(rows).DefaultView;
 
     private void UploadQueries_Click(object sender, RoutedEventArgs e)
     {
@@ -271,6 +358,14 @@ public partial class RwsPage : UserControl
             return (study.Key, environment.Key, environment.Value);
         return null;
     }
+
+    private static string DisplayEnvironment(string? environment) =>
+        string.IsNullOrWhiteSpace(environment) ? "Prod" : environment;
+
+    private static string NormalizeEnvironment(string? environment) =>
+        string.IsNullOrWhiteSpace(environment) || environment.Trim().Equals("Prod", StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : environment.Trim();
 
     private bool ValidateCredentials(bool showMessage = true)
     {

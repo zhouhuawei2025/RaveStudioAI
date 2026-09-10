@@ -18,8 +18,7 @@ namespace RaveStudioAI.Rws.Models
         public List<string> SubjectKeys { get; set; } = new();
         public List<string> FormNames { get; set; } = new();
 
-        public string Summary => $"{Project}({Environment}) · {SubjectKeys.Count} 受试者 · {FormNames.Count} 表单";
+        public string Summary => $"{Project}({(string.IsNullOrWhiteSpace(Environment) ? "Prod" : Environment)}) · {SubjectKeys.Count} 受试者 · {FormNames.Count} 表单";
 
     }
 }
-
