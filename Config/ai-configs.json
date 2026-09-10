@@ -1,0 +1,19 @@
+{
+  "SelectedProfile": "公司 AI",
+  "Profiles": [
+    {
+      "Name": "公司 AI",
+      "Url": "http://192.168.8.58:30008/v1",
+      "Model": "openai/gpt-oss-120b",
+      "ApiKey": "",
+      "BatchSize": 20
+    },
+    {
+      "Name": "备用配置",
+      "Url": "https://api.example.com/v1",
+      "Model": "model-name",
+      "ApiKey": "",
+      "BatchSize": 20
+    }
+  ]
+}

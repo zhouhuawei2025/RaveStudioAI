@@ -1,0 +1,72 @@
+##下面是表单中的字段信息，包括名称、OID、类型和布局。现在需要识别出所有带code list的字段，然后根据这些字段的创建一组字典列表，以json格式返回。
+
+##对应的C#类：
+class DataDictionary
+ {
+   public string OID { get; set; }
+   public string Name { get; set; }
+   public List<DataDictionaryEntry> DataDictionaryEntries { get; set; } = new List<DataDictionaryEntry>();
+ }
+ class DataDictionaryEntry
+{
+    public int EntryOID { get; set; }
+    public string ItemDataString { get; set; }
+    public bool IsSpecify { get; set; } = false;
+   
+}
+
+##举例(注意事项：如果字典的某个选项后存在类似于Long Text [$100]的描述，或者选项是`其他，请详述` `其他` `Other` `Other, please Specify`之类的描述，说明该选项的IsSpecify = true)：
+字段OID： SVOCCUR, 字段类型和格式：RadioButton [1]
+code list
+1=是
+2=否
+字段OID： LBPERF, 字段类型和格式：[1] RadioButton
+1= 0. 1分  2= 1. 2分  99=Other, please specify
+Long Text [$5]
+字段OID：REVERS, 字段类型和格式：RadioButton [2] 
+Code list: 
+1=1.1 
+99=其他，请详述 
+Long Text [$200] 
+
+##需要返回的json为： 
+[
+  {
+    "OID": "SVOCCUR", "Name": "SVOCCUR",
+    "DataDictionaryEntries": [
+      {
+        "EntryOID": 1, "ItemDataString": "是"
+      },
+      {
+        "EntryOID": 2, "ItemDataString": "否"
+      }
+    ]
+  },
+  {
+    "OID": "LBPERF", "Name": "LBPERF",
+    "DataDictionaryEntries": [
+      {
+        "EntryOID": 1, "ItemDataString": "0. 1分"
+      },
+      {
+        "EntryOID": 2, "ItemDataString": "1. 2分"
+      },
+      {
+        "EntryOID": 99, "ItemDataString": "Other,pleasespecify", "IsSpecify": true
+      }
+    ]
+  },
+  {
+    "OID": "REVERS", "Name": "REVERS",
+    "DataDictionaryEntries": [
+      {
+        "EntryOID": 1, "ItemDataString": "1.1"
+      },
+      {
+        "EntryOID": 99, "ItemDataString": "其他，请详述", "IsSpecify": true
+      }
+    ]
+  }
+]
+现在请根据下面的信息直接返回json，用于后续的反序列化（无需输出额外信息，确保后续的过程顺利）。
+

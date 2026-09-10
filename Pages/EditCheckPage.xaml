@@ -1,0 +1,90 @@
+<UserControl x:Class="RaveStudioAI.Pages.EditCheckPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Edit Check Studio" FontSize="28" FontWeight="SemiBold" Foreground="#26324A" />
+            <TextBlock x:Name="SdsStatusText" Margin="0,7,0,0" Foreground="#6C7892"
+                       Text="请先从项目入口上传人工确认的 SDS。" />
+        </StackPanel>
+
+        <TabControl Grid.Row="1">
+            <TabItem Header="OpenQuery 批量生成">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /><RowDefinition Height="2*" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="上传 Query Excel" Padding="16,7" Style="{StaticResource ButtonPrimary}" Click="UploadQueries_Click" />
+                        <Button x:Name="RunQueriesButton" Content="逐条调用 AI 生成" Padding="16,7" Margin="10,0,0,0"
+                                Style="{StaticResource ButtonSuccess}" Click="RunQueries_Click" />
+                        <Button Content="清空" Padding="16,7" Margin="10,0,0,0" Click="ClearQueries_Click" />
+                        <TextBlock x:Name="QueryProgressText" Margin="18,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Queries}" AutoGenerateColumns="False" CanUserAddRows="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="QueryOID" Binding="{Binding QueryOid}" Width="120" />
+                            <DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOid}" Width="100" />
+                            <DataGridTextColumn Header="FormOID" Binding="{Binding FormOid}" Width="100" />
+                            <DataGridTextColumn Header="FieldOID" Binding="{Binding FieldOid}" Width="110" />
+                            <DataGridTextColumn Header="LogicText" Binding="{Binding LogicText}" Width="*" />
+                            <DataGridTextColumn Header="Message" Binding="{Binding MessageText}" Width="*" />
+                            <DataGridCheckBoxColumn Header="Error" Binding="{Binding HasError}" Width="60" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DockPanel Grid.Row="2" Margin="0,10,0,7">
+                        <Button DockPanel.Dock="Right" Content="复制结果" Padding="14,5" Click="CopyQueryResult_Click" />
+                        <TextBlock Text="QuickEdit 结果" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBox Grid.Row="3" x:Name="QueryResultTextBox" AcceptsReturn="True" TextWrapping="NoWrap"
+                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="SetDataPointVisible 批量生成">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /><RowDefinition Height="2*" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="上传 Blind Excel" Padding="16,7" Style="{StaticResource ButtonPrimary}" Click="UploadBlinds_Click" />
+                        <Button Content="本地批量生成" Padding="16,7" Margin="10,0,0,0"
+                                Style="{StaticResource ButtonSuccess}" Click="RunBlinds_Click" />
+                        <Button Content="清空" Padding="16,7" Margin="10,0,0,0" Click="ClearBlinds_Click" />
+                        <TextBlock x:Name="BlindProgressText" Margin="18,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Blinds}" AutoGenerateColumns="False" CanUserAddRows="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="BlindOID" Binding="{Binding BlindOid}" Width="120" />
+                            <DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOid}" Width="100" />
+                            <DataGridTextColumn Header="FormOID" Binding="{Binding FormOid}" Width="100" />
+                            <DataGridTextColumn Header="FieldOID" Binding="{Binding FieldOid}" Width="*" />
+                            <DataGridTextColumn Header="LogicText" Binding="{Binding LogicText}" Width="2*" />
+                            <DataGridCheckBoxColumn Header="Error" Binding="{Binding HasError}" Width="60" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DockPanel Grid.Row="2" Margin="0,10,0,7">
+                        <Button DockPanel.Dock="Right" Content="复制结果" Padding="14,5" Click="CopyBlindResult_Click" />
+                        <TextBlock Text="QuickEdit 结果" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBox Grid.Row="3" x:Name="BlindResultTextBox" AcceptsReturn="True" TextWrapping="NoWrap"
+                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" />
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="ECS 手动创建">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                        <TextBlock Text="ECS 手动创建" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="该功能与单条 AI 运行无关，将继续保留。其动态条件/动作控件将在下一步迁入。"
+                                   Margin="0,12,0,0" TextWrapping="Wrap" TextAlignment="Center" Foreground="#6C7892" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

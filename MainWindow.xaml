@@ -1,0 +1,44 @@
+<Window x:Class="RaveStudioAI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        Title="Rave Studio AI" Height="760" Width="1240"
+        MinHeight="650" MinWidth="1040"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F7FB">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#17213A">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top" Margin="18,24,18,18">
+                    <TextBlock Text="RAVE" Foreground="White" FontSize="24" FontWeight="Bold" />
+                    <TextBlock Text="STUDIO AI" Foreground="#91A7FF" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="EDC 全流程工作台" Foreground="#AAB4CE" Margin="0,6,0,0" />
+                </StackPanel>
+
+                <StackPanel>
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="⌂  项目入口" Tag="Home" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="1  EDC / SDS" Tag="Sds" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="2  Matrix" Tag="Matrix" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="3  Edit Check" Tag="EditCheck" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="4  RWS 数据" Tag="Rws" Click="Navigation_Click" />
+                    <Separator Margin="18,12" Background="#35415D" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="⚙  AI 配置" Tag="AIConfig" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="▤  日志中心" Tag="Logs" Click="Navigation_Click" />
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="© 2026 KimoPig"
+                           Foreground="#75809B" Margin="20" />
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <ContentControl x:Name="PageHost" />
+            <StackPanel hc:Growl.GrowlParent="True" HorizontalAlignment="Right" VerticalAlignment="Top" />
+        </Grid>
+    </Grid>
+</Window>

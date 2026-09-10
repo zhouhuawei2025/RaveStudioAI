@@ -1,0 +1,12 @@
+<UserControl x:Class="RaveStudioAI.Pages.PlaceholderPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="36">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock x:Name="TitleText" FontSize="30" FontWeight="SemiBold"
+                       Foreground="#26324A" HorizontalAlignment="Center" />
+            <TextBlock x:Name="DescriptionText" FontSize="15" Foreground="#6C7892"
+                       Margin="0,12,0,0" TextAlignment="Center" MaxWidth="620" TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</UserControl>

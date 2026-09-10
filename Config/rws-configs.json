@@ -1,0 +1,29 @@
+{
+  "selectedTenant": "lynkcode",
+  "tenants": {
+    "lynkcode": {
+      "username": "",
+      "password": "",
+      "studies": {
+        "LK001304": {
+          "UAT": [
+            "SUBJ", "SV", "UNS", "DM", "RESI", "MHDIAG", "MH", "SU", "AU", "QSVAS",
+            "QSPTGA", "QSPHGA", "QSHAQ", "QSMS", "PE1", "PE2", "PEO", "WT", "VS", "EG", "MOXR",
+            "MBTSPOT", "LBCHEM", "LBHEMA", "LBURIN", "LBVIRO", "LBHBV", "LBHCV", "LBRF", "LBACPA",
+            "LBPREG", "LBFSH", "LBCRP", "LBHSCRP", "LBESR", "QSTJC", "QSSJC", "IE", "DSRAND",
+            "PC1", "PC2", "PC_EC", "LTRYN", "LBOTH", "ETYN", "EC", "AE", "CM", "CMRA", "PR",
+            "DSEOT", "DSEOS", "DD"
+          ],
+          "": [
+            "SUBJ", "SV", "UNS", "DM", "RESI", "MHDIAG", "MH", "SU", "AU", "QSVAS",
+            "QSPTGA", "QSPHGA", "QSHAQ", "QSMS", "PE1", "PE2", "PEO", "WT", "VS", "EG", "MOXR",
+            "MBTSPOT", "LAB", "LBCHEM", "LBHEMA", "LBURIN", "LBVIRO", "LBHBV", "LBHCV", "LBRF", "LBACPA",
+            "LBPREG", "LBFSH", "LBCRP", "LBHSCRP", "LBESR", "QSTJC", "QSSJC", "IE", "DSRAND",
+            "PC1", "PC2", "PC_EC", "LTRYN", "LBOTH", "ETYN", "EC", "AE", "CM", "CMRA", "PR",
+            "DSEOT", "DSEOS", "DD"
+          ]
+        }
+      }
+    }
+  }
+}

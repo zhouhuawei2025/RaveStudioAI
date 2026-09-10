@@ -1,0 +1,31 @@
+ ##现在需要将表单中的字段信息转换为一组字段列表，以json格式返回。
+字段具有以下属性：
+public string FormOID { get; set; }       
+public string FieldOID { get; set; }
+public int Oridinal { get; set; }
+public string FieldName { get; set; }
+public string ControlType { get; set; }
+public string DataFormat { get; set; }
+public string DefaultValue { get; set; } = "";
+public bool QueryFutureDate { get; set; }=false;
+public bool IsGrid { get; set; } = false;
+
+##规则：
+FormOID 取自字段信息中的所属表单OID；
+FieldOID取自字段信息中的字段OID；
+Oridinal取自字段信息中的字段Oridinal；
+FieldName取自字段信息中的字段Name；
+ControlType：一共有 Text、LongText、Label、DateTime、CheckBox、RadioButton、RadioButton (Vertical)、DropDownList、Dynamic SearchList  9种可供选择，通常在字段详情的开头会注明字段的控件类型和字段的格式；
+DataFormat：取决于字段信息中的格式（格式中的+代表长度固定，-代表日期时间可以为UK），
+	举例：字符串的格式常见的有：[$10]，那么DataFormat = $10， 
+	整数的格式常见的有：[n]，[n+]，那么DataFormat = n,  n+ ,（例1：[2] → 2 例2：[7+] → 7+）
+	小数的格式常见的有：[n.x]，[n+.x+],[n+.x],[n.x+]，那么DataFormat = n.x,  n+.x+,  n+.x,  n.x+，（例1：[5.2] → 5.2  例2：[7+.1] → 7+.1）
+	日期的格式只可以为：DataFormat = dd MMM yyyy,  dd- MMM- yyyy-, 或 dd- MMM- yyyy，请根据字段的格式信息进行选择
+	时间的格式只可以为：DataFormat =HH:nn,  HH:nn:ss,  HH-:nn-, 或 HH-:nn-:ss-，请根据字段的格式信息进行选择
+	日期时间的只可以为：DataFormat =dd MMM yyyy HH:nn:ss
+	如果是没有注明格式，那么DataFormat = $100。
+DefaultValue: 默认为空字符串，如果字段详情中明确说明字段有默认值，那么就进行赋值（例1：默认值：1，此时DefaultValue = "1"， 例2：默认值：1|2|3|，此时DefaultValue = "1|2|3|" ）。
+QueryFutureDate:默认为false，如果是日期、时间、日期时间，那么QueryFutureDate = true。
+IsGrid: 默认为false,如果字段信息中IsGrid = true，那么IsGrid = true。
+
+##现在请根据下面的信息直接返回json格式的结果（禁止输出任何与json结果无关的内容、说明、流程等）。

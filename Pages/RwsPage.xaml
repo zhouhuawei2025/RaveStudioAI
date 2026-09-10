@@ -1,0 +1,92 @@
+<UserControl x:Class="RaveStudioAI.Pages.RwsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hc="https://handyorg.github.io/handycontrol">
+    <Grid Margin="24">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <Border Padding="16" Background="#F6F8FC" CornerRadius="8" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="110"/><ColumnDefinition Width="170"/><ColumnDefinition Width="80"/><ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="70"/><ColumnDefinition Width="150"/><ColumnDefinition Width="70"/><ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="租户配置" VerticalAlignment="Center"/>
+                <ComboBox x:Name="ProfileComboBox" Grid.Column="1" SelectionChanged="ProfileComboBox_SelectionChanged"/>
+                <TextBlock Grid.Column="2" Text="租户" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBox x:Name="TenantTextBox" Grid.Column="3"/>
+                <TextBlock Grid.Column="4" Text="用户名" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBox x:Name="UsernameTextBox" Grid.Column="5"/>
+                <TextBlock Grid.Column="6" Text="密码" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <PasswordBox x:Name="PasswordBox" Grid.Column="7"/>
+                <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="14,0,0,0">
+                    <Button Content="保存配置" Padding="14,5" Click="SaveProfile_Click"/>
+                    <Button x:Name="LoginButton" Content="连接 RWS" Padding="14,5" Margin="8,0,0,0" Click="Login_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <TabControl Grid.Row="1" Style="{StaticResource TabControlInLine}">
+            <TabItem Header="数据查询">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="250"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="4,4,16,4">
+                            <TextBlock Text="试验" FontWeight="Bold"/>
+                            <ComboBox x:Name="StudyComboBox" Margin="0,6,0,12" DisplayMemberPath="DisplayName" SelectionChanged="StudyComboBox_SelectionChanged"/>
+                            <TextBlock Text="环境" FontWeight="Bold"/>
+                            <TextBox x:Name="EnvironmentTextBox" Margin="0,6,0,12"/>
+                            <DockPanel><TextBlock Text="受试者" FontWeight="Bold"/><Button Content="全选/取消" DockPanel.Dock="Right" Click="ToggleSubjects_Click"/></DockPanel>
+                            <ListBox x:Name="SubjectListBox" Height="190" Margin="0,6,0,12">
+                                <ListBox.ItemTemplate><DataTemplate><CheckBox Content="{Binding SubjectKey}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/></DataTemplate></ListBox.ItemTemplate>
+                            </ListBox>
+                            <DockPanel><TextBlock Text="表单" FontWeight="Bold"/><Button Content="全选/取消" DockPanel.Dock="Right" Click="ToggleForms_Click"/></DockPanel>
+                            <ListBox x:Name="FormListBox" Height="190" Margin="0,6,0,12">
+                                <ListBox.ItemTemplate><DataTemplate><CheckBox Content="{Binding FormName}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/></DataTemplate></ListBox.ItemTemplate>
+                            </ListBox>
+                            <ComboBox x:Name="DatasetTypeComboBox" SelectedIndex="0"><ComboBoxItem Content="regular"/><ComboBoxItem Content="raw"/></ComboBox>
+                            <Button x:Name="DownloadButton" Content="查询数据" Margin="0,12,0,0" Padding="12,7" Click="Download_Click"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock x:Name="DownloadStatusText" Text="请先连接 RWS" VerticalAlignment="Center"/>
+                            <Button Content="导出 Excel" DockPanel.Dock="Right" Padding="12,5" Click="ExportData_Click"/>
+                        </DockPanel>
+                        <DataGrid x:Name="DataGrid" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True" EnableColumnVirtualization="True"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="发送质疑">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="上传 Query Excel" Padding="12,5" Click="UploadQueries_Click"/>
+                        <TextBlock Text="接收组" Margin="18,0,6,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="RecipientTextBox" Width="150"/>
+                        <Button x:Name="SendQueriesButton" Content="逐条发送" Padding="12,5" Margin="8,0,0,0" Click="SendQueries_Click"/>
+                        <Button Content="导出全部" Padding="12,5" Margin="8,0,0,0" Click="ExportQueries_Click"/>
+                        <Button Content="导出失败" Padding="12,5" Margin="8,0,0,0" Click="ExportFailedQueries_Click"/>
+                        <TextBlock x:Name="QueryStatusText" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <DataGrid x:Name="QueryDataGrid" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="配置详情">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="租户名称" Width="90" VerticalAlignment="Center"/><TextBox x:Name="ProfileNameTextBox" Width="220" IsReadOnly="True"/>
+                        <TextBlock Text="预设试验" Width="90" Margin="24,0,0,0" VerticalAlignment="Center"/><TextBox x:Name="ConfiguredStudyTextBox" Width="220"/>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="配置文件会在本机以明文保存密码，请勿提交包含真实密码的配置文件。" Foreground="#B45309" Margin="0,12,0,0"/>
+                    <TextBlock Grid.Row="2" Text="预设表单（每行一个，也可用逗号分隔）" Margin="0,18,0,8"/>
+                    <TextBox x:Name="ConfiguredFormsTextBox" Grid.Row="3" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
