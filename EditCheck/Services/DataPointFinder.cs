@@ -7,7 +7,7 @@ public sealed class DataPointFinder
     public static readonly HashSet<string> Functions = new(StringComparer.OrdinalIgnoreCase)
     {
         "=", "and", "or", ">", "<", "＞", "＜", "≥", "≤", ">=", "<=", "＞=", "＜=", "<>", "!=", "＜＞",
-        "Add", "AddDay", "AddMin", "AddHour", "AddMonth", "IsEmpty", "IsNotEmpty", "TimeSpan"
+        "Add", "AddDay", "AddMin", "AddHour", "AddMonth", "IsEmpty", "IsNotEmpty", "TimeSpan", "IsPresent"
     };
 
     public ProjectField? CurrentField { get; private set; }

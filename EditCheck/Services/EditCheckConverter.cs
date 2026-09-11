@@ -107,6 +107,9 @@ public static class EditCheckConverter
 
     private static string[]? SplitExpression(string input)
     {
+       if(input == "NOW is present" || input == "NOW is Present")
+                return ["NOW", "IsPresent"];
+
         var match = Regex.Match(input, @"^(.+?)(<>|!=|≠|>=|<=|≥|≤|＞=|＜=|=|>|<|＞|＜)(.+)$");
         return match.Success ? [match.Groups[1].Value.Trim(), match.Groups[3].Value.Trim(), match.Groups[2].Value.Trim()] : null;
     }
@@ -132,13 +135,23 @@ public static class EditCheckConverter
 
     private static string ParseFunction(string value) => value.ToLowerInvariant() switch
     {
-        "=" => "IsEqualTo|||||||||||||", ">" or "＞" => "IsGreaterThan|||||||||||||",
-        "<" or "＜" => "IsLessThan|||||||||||||", ">=" or "＞=" or "≥" => "IsGreaterThanOrEqualTo|||||||||||||",
-        "<=" or "＜=" or "≤" => "IsLessThanOrEqualTo|||||||||||||", "!=" or "<>" or "＜＞" or "≠" => "IsNotEqualTo|||||||||||||",
-        "and" => "And|||||||||||||", "or" => "Or|||||||||||||", "add" => "Add|||||||||||||",
-        "addday" => "AddDay|||||||||||||", "addmin" => "AddMin|||||||||||||", "addhour" => "AddHour|||||||||||||",
-        "addmonth" => "AddMonth|||||||||||||", "isempty" => "IsEmpty|||||||||||||",
-        "isnotempty" => "IsNotEmpty|||||||||||||", "timespan" => "TimeSpan|||||||||||||",
+        "=" => "IsEqualTo|||||||||||||", 
+        ">" or "＞" => "IsGreaterThan|||||||||||||",
+        "<" or "＜" => "IsLessThan|||||||||||||", 
+        ">=" or "＞=" or "≥" => "IsGreaterThanOrEqualTo|||||||||||||",
+        "<=" or "＜=" or "≤" => "IsLessThanOrEqualTo|||||||||||||", 
+        "!=" or "<>" or "＜＞" or "≠" => "IsNotEqualTo|||||||||||||",
+        "and" => "And|||||||||||||", 
+        "or" => "Or|||||||||||||", 
+        "add" => "Add|||||||||||||",
+        "addday" => "AddDay|||||||||||||", 
+        "addmin" => "AddMin|||||||||||||", 
+        "addhour" => "AddHour|||||||||||||",
+        "addmonth" => "AddMonth|||||||||||||", 
+        "isempty" => "IsEmpty|||||||||||||",
+        "isnotempty" => "IsNotEmpty|||||||||||||", 
+        "timespan" => "TimeSpan|||||||||||||",
+        "ispresent" => "IsPresent|||||||||||||",
         _ => throw new InvalidDataException($"无法识别函数：{value}")
     };
 

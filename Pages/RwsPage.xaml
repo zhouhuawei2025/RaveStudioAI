@@ -7,21 +7,30 @@
         <Border Padding="16" Background="#F6F8FC" CornerRadius="8" Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"/><ColumnDefinition Width="170"/><ColumnDefinition Width="80"/><ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="70"/><ColumnDefinition Width="150"/><ColumnDefinition Width="70"/><ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="租户配置" VerticalAlignment="Center"/>
+                <TextBlock Text="当前选择:" VerticalAlignment="Center"/>
                 <ComboBox x:Name="ProfileComboBox" Grid.Column="1" SelectionChanged="ProfileComboBox_SelectionChanged"/>
-                <TextBlock Grid.Column="2" Text="租户" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="租户名:" Margin="12,0,0,0" VerticalAlignment="Center"/>
                 <TextBox x:Name="TenantTextBox" Grid.Column="3"/>
-                <TextBlock Grid.Column="4" Text="用户名" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="4" Text="用户名:" Margin="12,0,0,0" VerticalAlignment="Center"/>
                 <TextBox x:Name="UsernameTextBox" Grid.Column="5"/>
-                <TextBlock Grid.Column="6" Text="密码" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="6" Text="密码:" Margin="12,0,0,0" VerticalAlignment="Center"/>
                 <PasswordBox x:Name="PasswordBox" Grid.Column="7"/>
                 <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="14,0,0,0">
-                    <Button Content="保存配置" Padding="14,5" Click="SaveProfile_Click"/>
-                    <Button x:Name="LoginButton" Content="连接 RWS" Padding="14,5" Margin="8,0,0,0" Click="Login_Click"/>
+                    <Button Content="保存配置" Click="SaveProfile_Click"
+                            Style="{StaticResource ButtonSuccess}"/>
+                    <Button x:Name="LoginButton" Content="连接 RWS" Margin="8,0,0,0" 
+                            Click="Login_Click"
+                            Style="{StaticResource ButtonInfo}"/>
                 </StackPanel>
             </Grid>
         </Border>

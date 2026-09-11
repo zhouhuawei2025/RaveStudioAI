@@ -24,22 +24,22 @@
 
             <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="20">
                 <StackPanel>
-                    <Button x:Name="UploadTemplateButton" Content="上传 Folders-Forms" Height="38"
+                    <Button x:Name="UploadTemplateButton" Content="上传 Folders-Forms" Height="38" Width="150"
                             Style="{StaticResource ButtonPrimary}" Click="UploadTemplate_Click" />
-                    <Button Content="使用主入口 SDS" Height="34" Margin="0,8,0,0"
+                    <Button Content="使用主入口 SDS" Height="34" Width="150" Margin="0,8,0,0"
                             Click="UseCurrentSds_Click" />
                     <TextBlock Text="{Binding FormOids.Count, StringFormat=已读取 {0} 个 Form OID}" Margin="0,13,0,4" />
                     <TextBlock Text="{Binding VisitOids.Count, StringFormat=已读取 {0} 个 Visit OID}" />
                     <TextBlock Text="{Binding TemplatePath}" Margin="0,7,0,22" Foreground="#8892A8"
                                TextWrapping="Wrap" MaxHeight="52" />
 
-                    <Button x:Name="UploadScenarioButton" Content="上传 Matrices" Height="38"
+                    <Button x:Name="UploadScenarioButton" Content="上传 DM Matrices文件" Height="38" Width="150"
                             Style="{StaticResource ButtonPrimary}" Click="UploadScenario_Click" />
                     <TextBlock Text="{Binding Matrices.Count, StringFormat=已解析 {0} 个 Matrix}" Margin="0,13,0,4" />
                     <TextBlock Text="{Binding ScenarioPath}" Margin="0,7,0,22" Foreground="#8892A8"
                                TextWrapping="Wrap" MaxHeight="52" />
 
-                    <Button x:Name="ExportButton" Content="导出 Matrices" Height="38"
+                    <Button x:Name="ExportButton" Content="导出 Matrices" Height="38" Width="150"
                             Style="{StaticResource ButtonSuccess}" Click="Export_Click" />
                 </StackPanel>
             </Border>

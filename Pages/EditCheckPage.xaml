@@ -12,20 +12,23 @@
                        Text="请先从项目入口上传人工确认的 SDS。" />
         </StackPanel>
 
-        <TabControl Grid.Row="1">
-            <TabItem Header="OpenQuery 批量生成">
+        <TabControl Grid.Row="1" Style="{StaticResource TabControlInLine}">
+            <TabItem Header="OpenQuery生成">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" /><RowDefinition Height="2*" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                        <RowDefinition Height="42" />
+                        <RowDefinition Height="5*" />
+                        <RowDefinition Height="42" />
+                        <RowDefinition Height="3*" />
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="上传 Query Excel" Padding="16,7" Style="{StaticResource ButtonPrimary}" Click="UploadQueries_Click" />
-                        <Button x:Name="RunQueriesButton" Content="逐条调用 AI 生成" Padding="16,7" Margin="10,0,0,0"
+                        <Button Content="上传 Query Excel" Style="{StaticResource ButtonPrimary}" Click="UploadQueries_Click" />
+                        <Button x:Name="RunQueriesButton" Content="逐条调用 AI 生成" Margin="10,0,0,0"
                                 Style="{StaticResource ButtonSuccess}" Click="RunQueries_Click" />
-                        <Button Content="清空" Padding="16,7" Margin="10,0,0,0" Click="ClearQueries_Click" />
+                        <Button Content="清空" Margin="10,0,0,0" Click="ClearQueries_Click" />
                         <TextBlock x:Name="QueryProgressText" Margin="18,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
-                    <DataGrid Grid.Row="1" ItemsSource="{Binding Queries}" AutoGenerateColumns="False" CanUserAddRows="True">
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Queries}" AutoGenerateColumns="False" CanUserAddRows="True" Style="{StaticResource DataGrid.Small}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="QueryOID" Binding="{Binding QueryOid}" Width="120" />
                             <DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOid}" Width="100" />
@@ -37,7 +40,9 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <DockPanel Grid.Row="2" Margin="0,10,0,7">
-                        <Button DockPanel.Dock="Right" Content="复制结果" Padding="14,5" Click="CopyQueryResult_Click" />
+                        <Button DockPanel.Dock="Right" Content="复制结果" Height="25"
+                                Click="CopyQueryResult_Click" 
+                                Style="{StaticResource ButtonSuccess.Small}"/>
                         <TextBlock Text="QuickEdit 结果" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBox Grid.Row="3" x:Name="QueryResultTextBox" AcceptsReturn="True" TextWrapping="NoWrap"
@@ -45,19 +50,19 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="SetDataPointVisible 批量生成">
+            <TabItem Header="SetDataPointVisible生成">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" /><RowDefinition Height="2*" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="上传 Blind Excel" Padding="16,7" Style="{StaticResource ButtonPrimary}" Click="UploadBlinds_Click" />
-                        <Button Content="本地批量生成" Padding="16,7" Margin="10,0,0,0"
+                        <Button Content="上传 Blind Excel" Style="{StaticResource ButtonPrimary}" Click="UploadBlinds_Click" />
+                        <Button Content="批量生成" Margin="10,0,0,0"
                                 Style="{StaticResource ButtonSuccess}" Click="RunBlinds_Click" />
-                        <Button Content="清空" Padding="16,7" Margin="10,0,0,0" Click="ClearBlinds_Click" />
+                        <Button Content="清空" Margin="10,0,0,0" Click="ClearBlinds_Click" />
                         <TextBlock x:Name="BlindProgressText" Margin="18,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
-                    <DataGrid Grid.Row="1" ItemsSource="{Binding Blinds}" AutoGenerateColumns="False" CanUserAddRows="True">
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Blinds}" AutoGenerateColumns="False" CanUserAddRows="True" Style="{StaticResource DataGrid.Small}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="BlindOID" Binding="{Binding BlindOid}" Width="120" />
                             <DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOid}" Width="100" />
@@ -68,7 +73,8 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <DockPanel Grid.Row="2" Margin="0,10,0,7">
-                        <Button DockPanel.Dock="Right" Content="复制结果" Padding="14,5" Click="CopyBlindResult_Click" />
+                        <Button DockPanel.Dock="Right" Content="复制结果" Height="25" Click="CopyBlindResult_Click" 
+                                Style="{StaticResource ButtonSuccess.Small}"/>
                         <TextBlock Text="QuickEdit 结果" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBox Grid.Row="3" x:Name="BlindResultTextBox" AcceptsReturn="True" TextWrapping="NoWrap"
@@ -79,8 +85,8 @@
             <TabItem Header="ECS 手动创建">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/><RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="200"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="120"/>
                         <RowDefinition Height="Auto"/><RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <WrapPanel Margin="0,0,0,8">
@@ -93,17 +99,41 @@
                         <Button Content="删除末行" Padding="12,5" Margin="7,0,0,0" Click="RemoveEcsCondition_Click"/>
                     </WrapPanel>
                     <DataGrid x:Name="EcsConditionsGrid" Grid.Row="1" ItemsSource="{Binding EcsConditions}" AutoGenerateColumns="False"
-                              CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
+                              CanUserAddRows="False" HorizontalScrollBarVisibility="Auto"  Style="{StaticResource DataGrid.Small}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100"/>
-                            <DataGridTemplateColumn Header="Folder" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding FolderOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFolders, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Form" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding FormOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsForms, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Field" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Folder" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding FolderOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFolders, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Form" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding FormOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsForms, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Field" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFields, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Variable" Binding="{Binding VariableOid}" Width="90"/>
                             <DataGridTextColumn Header="RecPos" Binding="{Binding RecordPosition}" Width="65"/>
                             <DataGridTextColumn Header="Value" Binding="{Binding StaticValue}" Width="90"/>
                             <DataGridTextColumn Header="DataFormat" Binding="{Binding DataFormat}" Width="105"/>
-                            <DataGridTemplateColumn Header="Function" Width="155"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding CheckFunction, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFunctions, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Function" Width="155">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding CheckFunction, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFunctions, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="LogicRecPos" Binding="{Binding LogicalRecordPosition}" Width="95"/>
                             <DataGridTextColumn Header="Scope" Binding="{Binding Scope}" Width="75"/>
                             <DataGridTextColumn Header="OrderBy" Binding="{Binding OrderBy}" Width="85"/>
@@ -119,11 +149,29 @@
                         <Button Content="生成 ECS" Padding="14,5" Margin="18,0,0,0" Style="{StaticResource ButtonSuccess}" Click="GenerateEcs_Click"/>
                     </WrapPanel>
                     <DataGrid x:Name="EcsActionsGrid" Grid.Row="3" ItemsSource="{Binding EcsActions}" AutoGenerateColumns="False"
-                              CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
+                              CanUserAddRows="False" HorizontalScrollBarVisibility="Auto"  Style="{StaticResource DataGrid.Small}">
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="Folder" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding FolderOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFolders, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Form" Width="100"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding FormOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsForms, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Field" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Folder" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding FolderOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFolders, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Form" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding FormOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsForms, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Field" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFields, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Variable" Binding="{Binding VariableOid}" Width="90"/>
                             <DataGridTextColumn Header="RecPos" Binding="{Binding RecordPosition}" Width="65"/>
                             <DataGridTextColumn Header="FormRepNum" Binding="{Binding FormRepeatNumber}" Width="95"/>
@@ -131,15 +179,22 @@
                             <DataGridTextColumn Header="LogicRecPos" Binding="{Binding LogicalRecordPosition}" Width="95"/>
                             <DataGridTextColumn Header="Scope" Binding="{Binding Scope}" Width="75"/>
                             <DataGridTextColumn Header="OrderBy" Binding="{Binding OrderBy}" Width="85"/>
-                            <DataGridTemplateColumn Header="ActionType" Width="165"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox IsEditable="True" Text="{Binding ActionType, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsActionTypes, RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="ActionType" Width="165">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding ActionType, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsActionTypes, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="ActionString" Binding="{Binding ActionString}" Width="150"/>
                             <DataGridTextColumn Header="ActionOptions" Binding="{Binding ActionOptions}" Width="260"/>
                         </DataGrid.Columns>
                     </DataGrid>
 
                     <DockPanel Grid.Row="4" Margin="0,10,0,7">
-                        <Button DockPanel.Dock="Right" Content="复制结果" Padding="14,5" Click="CopyEcsResult_Click"/>
-                        <Button DockPanel.Dock="Right" Content="全部清空" Padding="14,5" Margin="0,0,8,0" Click="ClearEcs_Click"/>
+                        <Button DockPanel.Dock="Right" Height="25" Content="复制结果" Click="CopyEcsResult_Click"
+                                Style="{StaticResource ButtonSuccess.Small}"/>
+                        <Button DockPanel.Dock="Right" Content="全部清空" Margin="0,0,8,0" Click="ClearEcs_Click"/>
                         <TextBlock Text="ECS 结果" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </DockPanel>
                     <TextBox x:Name="EcsResultTextBox" Grid.Row="5" AcceptsReturn="True" FontFamily="Consolas"

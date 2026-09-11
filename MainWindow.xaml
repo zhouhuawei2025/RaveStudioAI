@@ -11,8 +11,12 @@
             <ColumnDefinition Width="220" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="15" />
+        </Grid.RowDefinitions>
 
-        <Border Grid.Column="0" Background="#17213A">
+        <Border Grid.Column="0" Background="CornflowerBlue">
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Top" Margin="18,24,18,18">
                     <TextBlock Text="RAVE" Foreground="White" FontSize="24" FontWeight="Bold" />
@@ -31,8 +35,7 @@
                     <Button Style="{StaticResource NavigationButtonStyle}" Content="▤  日志中心" Tag="Logs" Click="Navigation_Click" />
                 </StackPanel>
 
-                <TextBlock DockPanel.Dock="Bottom" Text="© 2026 KimoPig"
-                           Foreground="#75809B" Margin="20" />
+                
             </DockPanel>
         </Border>
 
@@ -40,5 +43,8 @@
             <ContentControl x:Name="PageHost" />
             <StackPanel hc:Growl.GrowlParent="True" HorizontalAlignment="Right" VerticalAlignment="Top" />
         </Grid>
+
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="© 2026 KimoPig. All Rights Reserved." TextAlignment="Right" Padding="0,0,18,0"
+           Foreground="#75809B" Background="MistyRose"/>
     </Grid>
 </Window>

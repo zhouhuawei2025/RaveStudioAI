@@ -11,7 +11,7 @@
 
             <StackPanel>
                 <TextBlock Text="Rave Studio AI" FontSize="32" FontWeight="SemiBold" Foreground="#26324A" />
-                <TextBlock Text="请先上传经过人工修订和确认的 Rave SDS，后续功能将以此文件为准。"
+                <TextBlock Text="请先上传系统导出的 Rave SDS文件，后续功能将以此文件为准。"
                            Margin="0,9,0,0" FontSize="15" Foreground="#6C7892" />
             </StackPanel>
 
@@ -27,7 +27,7 @@
                                    Foreground="#66728A" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding LoadedAtText, StringFormat=加载时间：{0}}" Margin="0,6,0,0" Foreground="#8892A8" />
                     </StackPanel>
-                    <Button Grid.Column="1" Content="上传已确认的 SDS" Padding="22,10" Margin="24,0,0,0"
+                    <Button Grid.Column="1" Content="上传已确认的 SDS" Margin="24,0,0,0"
                             VerticalAlignment="Center" Style="{StaticResource ButtonPrimary}" Click="UploadSds_Click" />
                 </Grid>
             </Border>
