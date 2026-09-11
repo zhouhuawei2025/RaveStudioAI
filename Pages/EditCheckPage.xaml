@@ -1,6 +1,9 @@
 <UserControl x:Class="RaveStudioAI.Pages.EditCheckPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
     <Grid Margin="28">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -25,7 +28,7 @@
                         <Button Content="上传 Query Excel" Style="{StaticResource ButtonPrimary}" Click="UploadQueries_Click" />
                         <Button x:Name="RunQueriesButton" Content="逐条调用 AI 生成" Margin="10,0,0,0"
                                 Style="{StaticResource ButtonSuccess}" Click="RunQueries_Click" />
-                        <Button Content="清空" Margin="10,0,0,0" Click="ClearQueries_Click" />
+                        <Button Content="清空数据行" Margin="10,0,0,0" Click="ClearQueryRows_Click" />
                         <TextBlock x:Name="QueryProgressText" Margin="18,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                     <DataGrid Grid.Row="1" ItemsSource="{Binding Queries}" AutoGenerateColumns="False" CanUserAddRows="True" Style="{StaticResource DataGrid.Small}">
@@ -43,6 +46,8 @@
                         <Button DockPanel.Dock="Right" Content="复制结果" Height="25"
                                 Click="CopyQueryResult_Click" 
                                 Style="{StaticResource ButtonSuccess.Small}"/>
+                        <Button DockPanel.Dock="Right" Content="清空结果" Height="25" Margin="0,0,8,0"
+                                Click="ClearQueryResult_Click"/>
                         <TextBlock Text="QuickEdit 结果" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBox Grid.Row="3" x:Name="QueryResultTextBox" AcceptsReturn="True" TextWrapping="NoWrap"
@@ -59,7 +64,7 @@
                         <Button Content="上传 Blind Excel" Style="{StaticResource ButtonPrimary}" Click="UploadBlinds_Click" />
                         <Button Content="批量生成" Margin="10,0,0,0"
                                 Style="{StaticResource ButtonSuccess}" Click="RunBlinds_Click" />
-                        <Button Content="清空" Margin="10,0,0,0" Click="ClearBlinds_Click" />
+                        <Button Content="清空数据行" Margin="10,0,0,0" Click="ClearBlindRows_Click" />
                         <TextBlock x:Name="BlindProgressText" Margin="18,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                     <DataGrid Grid.Row="1" ItemsSource="{Binding Blinds}" AutoGenerateColumns="False" CanUserAddRows="True" Style="{StaticResource DataGrid.Small}">
@@ -75,6 +80,8 @@
                     <DockPanel Grid.Row="2" Margin="0,10,0,7">
                         <Button DockPanel.Dock="Right" Content="复制结果" Height="25" Click="CopyBlindResult_Click" 
                                 Style="{StaticResource ButtonSuccess.Small}"/>
+                        <Button DockPanel.Dock="Right" Content="清空结果" Height="25" Margin="0,0,8,0"
+                                Click="ClearBlindResult_Click"/>
                         <TextBlock Text="QuickEdit 结果" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBox Grid.Row="3" x:Name="BlindResultTextBox" AcceptsReturn="True" TextWrapping="NoWrap"
@@ -101,44 +108,44 @@
                     <DataGrid x:Name="EcsConditionsGrid" Grid.Row="1" ItemsSource="{Binding EcsConditions}" AutoGenerateColumns="False"
                               CanUserAddRows="False" HorizontalScrollBarVisibility="Auto"  Style="{StaticResource DataGrid.Small}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" Width="100"/>
                             <DataGridTemplateColumn Header="Folder" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox IsEditable="True" Text="{Binding FolderOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFolders, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                        <ComboBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" IsEditable="True" Text="{Binding FolderOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFolders, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Form" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox IsEditable="True" Text="{Binding FormOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsForms, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                        <ComboBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" IsEditable="True" Text="{Binding FormOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsForms, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Field" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox IsEditable="True" Text="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFields, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                        <ComboBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" SelectedItem="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding AvailableFieldOids}" Style="{StaticResource ComboBox.Small}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Variable" Binding="{Binding VariableOid}" Width="90"/>
-                            <DataGridTextColumn Header="RecPos" Binding="{Binding RecordPosition}" Width="65"/>
-                            <DataGridTextColumn Header="Value" Binding="{Binding StaticValue}" Width="90"/>
-                            <DataGridTextColumn Header="DataFormat" Binding="{Binding DataFormat}" Width="105"/>
+                            <DataGridTemplateColumn Header="Variable" Width="90"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" Text="{Binding VariableOid}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="RecPos" Width="65"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" Text="{Binding RecordPosition}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Value" Width="90"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Visibility="{Binding IsConstant, Converter={StaticResource BoolToVisibility}}" Text="{Binding StaticValue, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="DataFormat" Width="115"><DataGridTemplateColumn.CellTemplate><DataTemplate><Grid><ComboBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" ItemsSource="{Binding DataContext.EcsDataFormats, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding DataFormat, UpdateSourceTrigger=PropertyChanged}"/><TextBox Visibility="{Binding IsConstant, Converter={StaticResource BoolToVisibility}}" Text="{Binding DataFormat}" IsReadOnly="True"/></Grid></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Function" Width="155">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox IsEditable="True" Text="{Binding CheckFunction, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFunctions, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                        <ComboBox Visibility="{Binding IsFunction, Converter={StaticResource BoolToVisibility}}" IsEditable="True" Text="{Binding CheckFunction, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFunctions, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="LogicRecPos" Binding="{Binding LogicalRecordPosition}" Width="95"/>
-                            <DataGridTextColumn Header="Scope" Binding="{Binding Scope}" Width="75"/>
-                            <DataGridTextColumn Header="OrderBy" Binding="{Binding OrderBy}" Width="85"/>
-                            <DataGridTextColumn Header="FormRepNum" Binding="{Binding FormRepeatNumber}" Width="95"/>
-                            <DataGridTextColumn Header="FolderRepNum" Binding="{Binding FolderRepeatNumber}" Width="105"/>
+                            <DataGridTemplateColumn Header="LogicRecPos" Width="105"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" ItemsSource="{Binding DataContext.EcsLogicRecordPositions, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding LogicalRecordPosition, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Scope" Width="80"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Visibility="{Binding ShowScope, Converter={StaticResource BoolToVisibility}}" ItemsSource="{Binding DataContext.EcsScopes, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding Scope}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="OrderBy" Width="90"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Visibility="{Binding ShowOrderBy, Converter={StaticResource BoolToVisibility}}" ItemsSource="{Binding DataContext.EcsOrderBys, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding OrderBy}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="FormRepNum" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" Text="{Binding FormRepeatNumber}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="FolderRepNum" Width="105"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Visibility="{Binding IsDataValue, Converter={StaticResource BoolToVisibility}}" Text="{Binding FolderRepeatNumber}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
 
@@ -168,7 +175,7 @@
                             <DataGridTemplateColumn Header="Field" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox IsEditable="True" Text="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsFields, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                        <ComboBox SelectedItem="{Binding FieldOid, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding AvailableFieldOids}" Style="{StaticResource ComboBox.Small}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -176,13 +183,13 @@
                             <DataGridTextColumn Header="RecPos" Binding="{Binding RecordPosition}" Width="65"/>
                             <DataGridTextColumn Header="FormRepNum" Binding="{Binding FormRepeatNumber}" Width="95"/>
                             <DataGridTextColumn Header="FolderRepNum" Binding="{Binding FolderRepeatNumber}" Width="105"/>
-                            <DataGridTextColumn Header="LogicRecPos" Binding="{Binding LogicalRecordPosition}" Width="95"/>
-                            <DataGridTextColumn Header="Scope" Binding="{Binding Scope}" Width="75"/>
-                            <DataGridTextColumn Header="OrderBy" Binding="{Binding OrderBy}" Width="85"/>
+                            <DataGridTemplateColumn Header="LogicRecPos" Width="105"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox ItemsSource="{Binding DataContext.EcsLogicRecordPositions, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding LogicalRecordPosition, UpdateSourceTrigger=PropertyChanged}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Scope" Width="80"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Visibility="{Binding ShowScope, Converter={StaticResource BoolToVisibility}}" ItemsSource="{Binding DataContext.EcsScopes, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding Scope}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="OrderBy" Width="90"><DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox Visibility="{Binding ShowOrderBy, Converter={StaticResource BoolToVisibility}}" ItemsSource="{Binding DataContext.EcsOrderBys, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding OrderBy}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="ActionType" Width="165">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox IsEditable="True" Text="{Binding ActionType, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsActionTypes, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
+                                        <ComboBox SelectedItem="{Binding ActionType, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding DataContext.EcsActionTypes, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource ComboBox.Small}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

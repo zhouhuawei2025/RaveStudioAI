@@ -4,6 +4,8 @@ using Microsoft.Win32;
 using RaveStudioAI.Common;
 using RaveStudioAI.Matrix.Models;
 using RaveStudioAI.Matrix.Services;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -17,21 +19,24 @@ public partial class MatrixPage : UserControl
     private readonly ScenarioParserService _scenarioParser = new();
     private readonly MatrixBuildService _matrixBuilder = new();
     private readonly MatrixExcelExporter _exporter = new();
+    private readonly string _outputDirectory = Path.Combine(AppContext.BaseDirectory, "Output", "Matrix");
     private MatrixWorkbook? _currentWorkbook;
+    private DateTime? _loadedProjectAt;
 
     public MatrixPage()
     {
         InitializeComponent();
         DataContext = _viewModel;
+        Directory.CreateDirectory(_outputDirectory);
     }
 
     private void MatrixPage_Loaded(object sender, RoutedEventArgs e)
     {
-        var currentPath = CurrentProject.Instance.SdsPath;
-        if (!string.IsNullOrWhiteSpace(currentPath) &&
-            !currentPath.Equals(_viewModel.TemplatePath, StringComparison.OrdinalIgnoreCase))
+        var project = CurrentProject.Instance;
+        if (project.HasSds && project.LoadedAt != _loadedProjectAt)
         {
-            LoadTemplate(currentPath, false);
+            LogManager.BeginRun(LogCategory.Matrix, "matrix.log", "载入入口页 SDS 数据");
+            LoadCurrentProject(false);
         }
     }
 
@@ -39,7 +44,7 @@ public partial class MatrixPage : UserControl
     {
         var path = PickFile("OID 模板 Excel|*.xlsx;*.xlsm|Excel|*.xlsx;*.xlsm");
         if (path is null) return;
-
+        LogManager.BeginRun(LogCategory.Matrix, "matrix.log", "上传 Folders-Forms");
         LoadTemplate(path, true);
     }
 
@@ -50,7 +55,22 @@ public partial class MatrixPage : UserControl
             Growl.Warning(new GrowlInfo { Message = "请先在项目入口上传已确认的 SDS。", WaitTime = 3 });
             return;
         }
-        LoadTemplate(CurrentProject.Instance.SdsPath, true);
+        LogManager.BeginRun(LogCategory.Matrix, "matrix.log", "使用主入口 SDS");
+        LoadCurrentProject(true);
+    }
+
+    private void LoadCurrentProject(bool showMessage)
+    {
+        var project = CurrentProject.Instance;
+        _viewModel.ReplaceForms(project.Forms.Select(x => x.Oid));
+        _viewModel.ReplaceVisits(project.Folders.Select(x => x.Oid));
+        _viewModel.TemplatePath = project.SdsPath;
+        _loadedProjectAt = project.LoadedAt;
+        LogManager.Write(LogCategory.Matrix, "matrix.log",
+            $"复用入口页解析结果：{project.FormCount} Forms，{project.FolderCount} Folders");
+        if (showMessage)
+            Notice.Success($"已使用入口页解析结果：{project.FormCount} 个 Form OID，{project.FolderCount} 个 Visit OID。");
+        RebuildIfReady();
     }
 
     private void LoadTemplate(string path, bool showMessage)
@@ -62,6 +82,9 @@ public partial class MatrixPage : UserControl
             _viewModel.ReplaceForms(template.FormOids);
             _viewModel.ReplaceVisits(template.VisitOids);
             _viewModel.TemplatePath = path;
+            _loadedProjectAt = null;
+            LogManager.Write(LogCategory.Matrix, "matrix.log",
+                $"模板读取完成：{template.FormOids.Count} Forms，{template.VisitOids.Count} Visits");
             if (showMessage)
             {
                 Growl.Success(new GrowlInfo
@@ -80,7 +103,7 @@ public partial class MatrixPage : UserControl
     {
         var path = PickFile("Scenario Excel|*.xlsx;*.xlsm|Excel|*.xlsx;*.xlsm");
         if (path is null) return;
-
+        LogManager.BeginRun(LogCategory.Matrix, "matrix.log", "上传 DM Matrices 文件");
         SetEnabled(false);
         try
         {
@@ -97,15 +120,16 @@ public partial class MatrixPage : UserControl
             Growl.Warning(new GrowlInfo { Message = "请先上传 OID 模板和 Matrices 文件。", WaitTime = 2 });
             return;
         }
-
-        var dialog = new SaveFileDialog { Filter = "Excel Workbook|*.xlsx", FileName = "rave_matrix.xlsx" };
-        if (dialog.ShowDialog() != true) return;
+        LogManager.BeginRun(LogCategory.Matrix, "matrix.log", "导出 Matrix Excel");
 
         SetEnabled(false);
         try
         {
-            _exporter.Export(_currentWorkbook, dialog.FileName);
-            Growl.Success(new GrowlInfo { Message = "Matrix Excel 已导出。", WaitTime = 2 });
+            Directory.CreateDirectory(_outputDirectory);
+            var outputPath = Path.Combine(_outputDirectory, "allSubMatrices.xlsx");
+            _exporter.Export(_currentWorkbook, outputPath);
+            LogManager.Write(LogCategory.Matrix, "matrix.log", $"已导出：{outputPath}");
+            Growl.Success(new GrowlInfo { Message = $"Matrix Excel 已导出：{outputPath}", WaitTime = 3 });
         }
         catch (Exception ex) { ShowError("导出 Matrix Excel 失败", ex); }
         finally { SetEnabled(true); }
@@ -113,6 +137,12 @@ public partial class MatrixPage : UserControl
 
     private void MatrixSelectionChanged(object sender, SelectionChangedEventArgs e) =>
         RenderPreview(_viewModel.SelectedMatrix);
+
+    private void OpenOutputFolder_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(_outputDirectory);
+        Process.Start(new ProcessStartInfo { FileName = _outputDirectory, UseShellExecute = true });
+    }
 
     private void RebuildIfReady()
     {
@@ -126,6 +156,7 @@ public partial class MatrixPage : UserControl
                 _viewModel.FormOids.ToList(), _viewModel.VisitOids.ToList(), rows);
             _viewModel.ReplaceWorkbook(_currentWorkbook);
             RenderPreview(_viewModel.SelectedMatrix);
+            LogManager.Write(LogCategory.Matrix, "matrix.log", $"解析完成：{_currentWorkbook.Matrices.Count} 个 Matrix");
             Growl.Success(new GrowlInfo { Message = $"已解析 {_currentWorkbook.Matrices.Count} 个 Matrix。", WaitTime = 2 });
         }
         catch (Exception ex) { ShowError("解析 Matrices 文件失败", ex); }

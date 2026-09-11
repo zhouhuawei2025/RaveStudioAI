@@ -103,6 +103,7 @@ public partial class SdsPage : UserControl
         if (!EnsureTables()) return;
         SetBusy(true);
         var logPath = LogManager.GetPath(LogCategory.Sds, "codelistLog.txt");
+        LogManager.BeginRun(LogCategory.Sds, "codelistLog.txt", "CodeList 解析");
         try
         {
             _dictionaries.Clear();
@@ -113,7 +114,6 @@ public partial class SdsPage : UserControl
                 return;
             }
 
-            File.WriteAllText(logPath, $"CodeList 解析开始：{DateTime.Now}\r\n");
             var batchSize = Math.Max(1, AIConfigStore.Current.BatchSize);
             var total = (int)Math.Ceiling((double)layouts.Count / batchSize);
             for (var index = 0; index < total; index++)
@@ -144,10 +144,10 @@ public partial class SdsPage : UserControl
         if (!EnsureTables()) return;
         SetBusy(true);
         var logPath = LogManager.GetPath(LogCategory.Sds, "fieldlistLog.txt");
+        LogManager.BeginRun(LogCategory.Sds, "fieldlistLog.txt", "Field 解析");
         try
         {
             _fieldGroups.Clear();
-            File.WriteAllText(logPath, $"Field 解析开始：{DateTime.Now}\r\n");
 
             foreach (var table in _tables)
             {

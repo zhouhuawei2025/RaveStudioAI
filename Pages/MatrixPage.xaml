@@ -41,6 +41,8 @@
 
                     <Button x:Name="ExportButton" Content="导出 Matrices" Height="38" Width="150"
                             Style="{StaticResource ButtonSuccess}" Click="Export_Click" />
+                    <Button Content="打开输出目录" Height="34" Width="150" Margin="0,8,0,0"
+                            Click="OpenOutputFolder_Click" />
                 </StackPanel>
             </Border>
 

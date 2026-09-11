@@ -94,6 +94,7 @@ public partial class RwsPage : UserControl
             environments[environment] = ParseForms(ConfiguredFormsTextBox.Text);
         }
         _configuration.SelectedTenant = tenantName;
+        LogManager.BeginRun(LogCategory.Rws, "rws.log", "保存 RWS 配置");
         RwsProfileStore.Save(_configuration);
         LogManager.Write(LogCategory.Rws, "rws.log", $"已保存 RWS 配置：{tenantName}");
         Notice.Success($"RWS 配置已保存：{tenantName}");
@@ -104,6 +105,7 @@ public partial class RwsPage : UserControl
     private async void Login_Click(object sender, RoutedEventArgs e)
     {
         if (!ValidateCredentials()) return;
+        LogManager.BeginRun(LogCategory.Rws, "rws.log", "连接 RWS");
         SetBusy(true, "正在连接 RWS……");
         try
         {
@@ -162,7 +164,7 @@ public partial class RwsPage : UserControl
             Notice.Warning("请至少选择一个受试者和一个表单。");
             return;
         }
-
+        LogManager.BeginRun(LogCategory.Rws, "download.log", "RWS 数据查询");
         await RunDatasetQueryAsync(study, subjects, forms, DatasetType(), true);
     }
 
@@ -224,6 +226,7 @@ public partial class RwsPage : UserControl
             Notice.Warning("当前已连接的试验列表中找不到该历史试验。");
             return;
         }
+        LogManager.BeginRun(LogCategory.Rws, "download.log", "历史记录重新查询");
         await RunDatasetQueryAsync(study, history.SubjectKeys, history.FormNames, history.DataType, false);
     }
 
@@ -291,7 +294,7 @@ public partial class RwsPage : UserControl
             Notice.Warning("请填写接收组。");
             return;
         }
-
+        LogManager.BeginRun(LogCategory.Rws, "query.log", "RWS Query 发送");
         SetBusy(true);
         try
         {

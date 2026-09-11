@@ -24,6 +24,10 @@ public partial class EditCheckPage : UserControl
         "IsLessThan", "IsLessThanOrEqualTo", "IsNonConformant", "IsNotEmpty", "IsNotEqualTo", "IsPresent", "Not", "Or", "TimeSpan"];
     public IReadOnlyList<string> EcsActionTypes { get; } = ["AddForm", "CustomFunction", "IsPresent", "MrgMatrix", "OpenQuery",
         "SetDataPointVisible", "SetDynamicSearchList", "SetSiteInformation", "SetSubjectName", "SetSubjectStatus", "UniqueSubjectName"];
+    public IReadOnlyList<string> EcsDataFormats { get; } = ["StandardValue", "UserValue", "CodedValue", "DataStatus", "DataPoint"];
+    public IReadOnlyList<string> EcsLogicRecordPositions { get; } = ["None", "Max", "Min", "First", "Last", "Previous", "Next"];
+    public IReadOnlyList<string> EcsScopes { get; } = ["Form", "Folder", "Subject"];
+    public IReadOnlyList<string> EcsOrderBys { get; } = ["RecordDate", "CRFLocation"];
     private readonly string _instruction;
 
     public EditCheckPage()
@@ -38,6 +42,7 @@ public partial class EditCheckPage : UserControl
     {
         var path = PickExcel("选择 Query Excel");
         if (path is null) return;
+        LogManager.BeginRun(LogCategory.EditCheck, "editcheck.log", "读取 Query Excel");
         try
         {
             Replace(Queries, EditCheckExcelReader.ReadQueries(path));
@@ -49,6 +54,7 @@ public partial class EditCheckPage : UserControl
     private async void RunQueries_Click(object sender, RoutedEventArgs e)
     {
         if (!EnsureSds() || Queries.Count == 0) return;
+        LogManager.BeginRun(LogCategory.EditCheck, "query.log", "OpenQuery 批量生成");
         RunQueriesButton.IsEnabled = false;
         var result = new StringBuilder();
         var completed = 0;
@@ -80,6 +86,7 @@ public partial class EditCheckPage : UserControl
     {
         var path = PickExcel("选择 Blind Excel");
         if (path is null) return;
+        LogManager.BeginRun(LogCategory.EditCheck, "editcheck.log", "读取 Blind Excel");
         try
         {
             Replace(Blinds, EditCheckExcelReader.ReadBlinds(path));
@@ -91,6 +98,7 @@ public partial class EditCheckPage : UserControl
     private void RunBlinds_Click(object sender, RoutedEventArgs e)
     {
         if (!EnsureSds() || Blinds.Count == 0) return;
+        LogManager.BeginRun(LogCategory.EditCheck, "blind.log", "SetDataPointVisible 批量生成");
         var result = new StringBuilder();
         var completed = 0;
         foreach (var blind in Blinds)
@@ -110,8 +118,10 @@ public partial class EditCheckPage : UserControl
         BlindProgressText.Text = $"处理完成：{Blinds.Count - Blinds.Count(x => x.HasError)} 成功，{Blinds.Count(x => x.HasError)} 失败";
     }
 
-    private void ClearQueries_Click(object sender, RoutedEventArgs e) { Queries.Clear(); QueryResultTextBox.Clear(); QueryProgressText.Text = ""; }
-    private void ClearBlinds_Click(object sender, RoutedEventArgs e) { Blinds.Clear(); BlindResultTextBox.Clear(); BlindProgressText.Text = ""; }
+    private void ClearQueryRows_Click(object sender, RoutedEventArgs e) { Queries.Clear(); QueryProgressText.Text = ""; }
+    private void ClearQueryResult_Click(object sender, RoutedEventArgs e) => QueryResultTextBox.Clear();
+    private void ClearBlindRows_Click(object sender, RoutedEventArgs e) { Blinds.Clear(); BlindProgressText.Text = ""; }
+    private void ClearBlindResult_Click(object sender, RoutedEventArgs e) => BlindResultTextBox.Clear();
     private void CopyQueryResult_Click(object sender, RoutedEventArgs e) => Copy(QueryResultTextBox.Text);
     private void CopyBlindResult_Click(object sender, RoutedEventArgs e) => Copy(BlindResultTextBox.Text);
     private void CopyEcsResult_Click(object sender, RoutedEventArgs e) => Copy(EcsResultTextBox.Text);
@@ -161,6 +171,7 @@ public partial class EditCheckPage : UserControl
     private void GenerateEcs_Click(object sender, RoutedEventArgs e)
     {
         if (!EnsureSds()) return;
+        LogManager.BeginRun(LogCategory.EditCheck, "ecs-manual.log", "ECS 手动生成");
         EcsConditionsGrid.CommitEdit(DataGridEditingUnit.Cell, true);
         EcsConditionsGrid.CommitEdit(DataGridEditingUnit.Row, true);
         EcsActionsGrid.CommitEdit(DataGridEditingUnit.Cell, true);
@@ -198,7 +209,7 @@ public partial class EditCheckPage : UserControl
         var values = type.ToLowerInvariant() switch
         {
             "data value" => new[] { "", "", row.DataFormat, row.VariableOid, row.FolderOid, row.FormOid, row.FieldOid,
-                row.RecordPosition, row.CustomFunction, row.LogicalRecordPosition, row.Scope, row.OrderBy,
+                row.RecordPosition, row.CustomFunction, LogicPosition(row.LogicalRecordPosition), row.Scope, row.OrderBy,
                 row.FormRepeatNumber, row.FolderRepeatNumber },
             "constant" => new[] { "", row.StaticValue, row.DataFormat, "", "", "", "", "", "", "", "", "", "", "" },
             "check function" => new[] { Required(row.CheckFunction, "Check Function"), "", "", "", "", "", "", "", "", "", "", "", "", "" },
@@ -221,7 +232,7 @@ public partial class EditCheckPage : UserControl
             _ => string.Empty
         };
         return string.Join("|", new[] { row.FolderOid, row.FormOid, row.FieldOid, row.VariableOid,
-            row.RecordPosition, row.FormRepeatNumber, row.FolderRepeatNumber, row.LogicalRecordPosition,
+            row.RecordPosition, row.FormRepeatNumber, row.FolderRepeatNumber, LogicPosition(row.LogicalRecordPosition),
             row.Scope, row.OrderBy, actionType, row.ActionString, row.ActionOptions, row.ActionScript, row.ActionHeader });
     }
 
@@ -243,15 +254,23 @@ public partial class EditCheckPage : UserControl
     {
         if (value == "00:00") return "HH:nn";
         if (int.TryParse(value, out var integer)) return integer.ToString().Length.ToString();
-        if (double.TryParse(value, System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out _))
-            return $"{value.Length}.{(value.Contains('.') ? value[(value.IndexOf('.') + 1)..].Length : 0)}";
+        if (double.TryParse(value, System.Globalization.NumberStyles.Any,
+            System.Globalization.CultureInfo.CurrentCulture, out var number))
+        {
+            var normalized = number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var decimalDigits = normalized.Contains('.') ? normalized.Split('.')[1].Length : 0;
+            return $"{normalized.Length}.{decimalDigits}";
+        }
         return string.IsNullOrEmpty(value) ? string.Empty : $"${value.Length}";
     }
 
     private static string Required(string value, string name) => !string.IsNullOrWhiteSpace(value)
         ? value.Trim()
         : throw new InvalidDataException($"{name} 不能为空。");
+
+    private static string LogicPosition(string value) => value.Equals("None", StringComparison.OrdinalIgnoreCase)
+        ? string.Empty
+        : value;
 
     private void RefreshSdsStatus()
     {
