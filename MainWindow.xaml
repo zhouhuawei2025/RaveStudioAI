@@ -8,7 +8,7 @@
         Background="#F5F7FB">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="232" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -16,21 +16,24 @@
             <RowDefinition Height="15" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Column="0" Background="CornflowerBlue">
+        <Border Grid.Column="0" Background="#F7F8FA" BorderBrush="#E5E6EB" BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top" Margin="18,24,18,18">
-                    <TextBlock Text="RAVE" Foreground="White" FontSize="24" FontWeight="Bold" />
-                    <TextBlock Text="STUDIO AI" Foreground="#91A7FF" FontSize="15" FontWeight="SemiBold" />
-                    <TextBlock Text="EDC 全流程工作台" Foreground="#AAB4CE" Margin="0,6,0,0" />
+                <StackPanel DockPanel.Dock="Top" Margin="24,26,18,20">
+                    <TextBlock Text="RAVE" Foreground="#1F2329" FontSize="24" FontWeight="Bold" />
+                    <TextBlock Text="STUDIO AI" Foreground="#3370FF" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="EDC 全流程工作台" Foreground="#8F959E" Margin="0,6,0,0" />
                 </StackPanel>
 
                 <StackPanel>
-                    <Button Style="{StaticResource NavigationButtonStyle}" Content="⌂  项目入口" Tag="Home" Click="Navigation_Click" />
+                    <Button x:Name="HomeNavigationButton" Style="{StaticResource NavigationButtonStyle}" Content="⌂  项目入口" Tag="Home" Click="Navigation_Click" />
                     <Button Style="{StaticResource NavigationButtonStyle}" Content="1  EDC / SDS" Tag="Sds" Click="Navigation_Click" />
                     <Button Style="{StaticResource NavigationButtonStyle}" Content="2  Matrix" Tag="Matrix" Click="Navigation_Click" />
-                    <Button Style="{StaticResource NavigationButtonStyle}" Content="3  Edit Check" Tag="EditCheck" Click="Navigation_Click" />
+                    <TextBlock Text="3  Edit Check" Foreground="#8F959E" FontSize="13" FontWeight="SemiBold" Margin="24,14,0,5"/>
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="   3.1  OpenQuery" Tag="OpenQuery" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="   3.2  SetDataPointVisible" Tag="SetDataPointVisible" Click="Navigation_Click" />
+                    <Button Style="{StaticResource NavigationButtonStyle}" Content="   3.3  ECS 手动创建" Tag="EcsManual" Click="Navigation_Click" />
                     <Button Style="{StaticResource NavigationButtonStyle}" Content="4  RWS 数据" Tag="Rws" Click="Navigation_Click" />
-                    <Separator Margin="18,12" Background="#35415D" />
+                    <Separator Margin="18,14" Background="#DEE0E3" />
                     <Button Style="{StaticResource NavigationButtonStyle}" Content="⚙  AI 配置" Tag="AIConfig" Click="Navigation_Click" />
                     <Button Style="{StaticResource NavigationButtonStyle}" Content="▤  日志中心" Tag="Logs" Click="Navigation_Click" />
                 </StackPanel>
@@ -45,6 +48,6 @@
         </Grid>
 
         <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="© 2026 KimoPig. All Rights Reserved." TextAlignment="Right" Padding="0,0,18,0"
-           Foreground="#75809B" Background="MistyRose"/>
+           Foreground="#8F959E" Background="#F7F8FA"/>
     </Grid>
 </Window>

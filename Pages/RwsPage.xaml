@@ -74,7 +74,7 @@
                         </ListBox>
                     </StackPanel>
                     <Grid Grid.Column="2">
-                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock x:Name="DownloadStatusText" Text="请先连接 RWS" VerticalAlignment="Center"/>
                             <Button Content="导出 Excel" DockPanel.Dock="Right" Padding="12,5" Click="ExportData_Click"/>
@@ -84,7 +84,15 @@
                             <Button Content="筛选" DockPanel.Dock="Right" Padding="12,5" Click="ApplyDatasetFilter_Click"/>
                             <TextBox x:Name="DatasetFilterTextBox" ToolTip="示例：AEYN = '1' and AESEV in ('1','2')"/>
                         </DockPanel>
-                        <DataGrid x:Name="DataGrid" Grid.Row="2" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True" EnableColumnVirtualization="True"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="预览表单：" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <ComboBox x:Name="PreviewFormComboBox" Width="160" DisplayMemberPath="Header"
+                                      SelectionChanged="PreviewFormComboBox_SelectionChanged"/>
+                            <hc:Pagination x:Name="PreviewPagination" Margin="12,0,0,0" DataCountPerPage="50"
+                                           MaxPageCount="1" PageIndex="1" PageUpdated="PreviewPagination_PageUpdated"/>
+                            <TextBlock x:Name="PreviewPageInfoText" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <DataGrid x:Name="DataGrid" Grid.Row="3" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True" EnableColumnVirtualization="True"/>
                     </Grid>
                 </Grid>
             </TabItem>
@@ -95,13 +103,55 @@
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <Button Content="上传 Query Excel" Padding="12,5" Click="UploadQueries_Click"/>
                         <TextBlock Text="接收组" Margin="18,0,6,0" VerticalAlignment="Center"/>
-                        <TextBox x:Name="RecipientTextBox" Width="150"/>
+                        <TextBox x:Name="RecipientTextBox" Width="150" Text="Site from DM"/>
                         <Button x:Name="SendQueriesButton" Content="逐条发送" Padding="12,5" Margin="8,0,0,0" Click="SendQueries_Click"/>
                         <Button Content="导出全部" Padding="12,5" Margin="8,0,0,0" Click="ExportQueries_Click"/>
                         <Button Content="导出失败" Padding="12,5" Margin="8,0,0,0" Click="ExportFailedQueries_Click"/>
                         <TextBlock x:Name="QueryStatusText" Margin="16,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <DataGrid x:Name="QueryDataGrid" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="True" EnableRowVirtualization="True"/>
+                    <DataGrid x:Name="QueryDataGrid" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="False"
+                              EnableRowVirtualization="True" EnableColumnVirtualization="True">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridCell">
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#DCEBFF"/>
+                                        <Setter Property="Foreground" Value="#1F2937"/>
+                                        <Setter Property="BorderBrush" Value="#7AA7F7"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Status}" Value="Success">
+                                        <Setter Property="Background" Value="#E8F7EF"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                        <Setter Property="Background" Value="#FBE2E2"/>
+                                        <Setter Property="Foreground" Value="#8A1F1F"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="60"/>
+                            <DataGridTextColumn Header="SiteOID" Binding="{Binding SiteOID}" Width="120"/>
+                            <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" Width="100"/>
+                            <DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOID}" Width="110"/>
+                            <DataGridTextColumn Header="FolderRepeatNumber" Binding="{Binding FolderRepeatNumber}" Width="150"/>
+                            <DataGridTextColumn Header="FormOID" Binding="{Binding FormOID}" Width="100"/>
+                            <DataGridTextColumn Header="FormRepeatNumber" Binding="{Binding FormRepeatNumber}" Width="150"/>
+                            <DataGridTextColumn Header="RecordPosition" Binding="{Binding RecordPosition}" Width="130"/>
+                            <DataGridTextColumn Header="FieldOID" Binding="{Binding FieldOID}" Width="120"/>
+                            <DataGridTextColumn Header="Data" Binding="{Binding Data}" Width="120"/>
+                            <DataGridTextColumn Header="Specify" Binding="{Binding Specify}" Width="120"/>
+                            <DataGridTextColumn Header="Query" Binding="{Binding Query}" Width="220"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                            <DataGridTextColumn Header="ErrorMessage" Binding="{Binding ErrorMessage}" Width="260"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </TabItem>
 

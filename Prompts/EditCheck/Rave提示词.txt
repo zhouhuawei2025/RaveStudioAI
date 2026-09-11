@@ -11,6 +11,7 @@
 - XXXX(in XXXX)形式（如`VSPERF(in SCR)`），输出：`SCR:默认前缀B:VSPERF
 - XX.XXXX(XXXX)形式（如`VS.VSPERF(C1D1)`），输出：`C1D1:VS:VSPERF`
 - XX.XXXX(in XXXX)形式（如`VS.VSPERF(in C1D1)`），输出：`C1D1:VS:VSPERF`
+- XXX.XX.XXXX三段式（如`C1D1.VS.VSPERF`），依次为FolderOID.FormOID.FieldOID，输出：`C1D1:VS:VSPERF`
 2. **差值**：
    - 纯数字（如`7`）直接输出
    - 数字差值（如`7`）输出(`7;Add`)
@@ -48,4 +49,3 @@
 - 例3：`V02##EC##(ECSTDAT+ECSTTIM)-(ENRO.RANDDAT1+ENRO.RANDTIM1) > 240min or (ECSTDAT+ECSTTIM)-(ENRO.RANDDAT1+ENRO.RANDTIM1) < 100min`→`V02:EC:ECSTDAT;V02:EC:ECSTTIM;00-00;TimeSpan;AddMin;V02:ENRO:RANDDAT1;V02:ENRO:RANDTIM1;00-00;TimeSpan;AddMin;240;AddMin;>;V02:EC:ECSTDAT;V02:EC:ECSTTIM;00-00;TimeSpan;AddMin;V02:ENRO:RANDDAT1;V02:ENRO:RANDTIM1;00-00;TimeSpan;AddMin;100;AddMin;<;or`
 
 请根据以上规则，将输入的逻辑文本转换为后缀表示法的字符串（仅输出转换结果，无需额外说明）。待转换文本：
-

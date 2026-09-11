@@ -38,6 +38,13 @@ public partial class EditCheckPage : UserControl
         Loaded += (_, _) => RefreshSdsStatus();
     }
 
+    protected void KeepManualPageOnly()
+    {
+        while (EditCheckTabs.Items.Count > 1) EditCheckTabs.Items.RemoveAt(0);
+        if (EditCheckTabs.Items.Count == 1 && EditCheckTabs.Items[0] is TabItem tab)
+            tab.Header = null;
+    }
+
     private void UploadQueries_Click(object sender, RoutedEventArgs e)
     {
         var path = PickExcel("选择 Query Excel");

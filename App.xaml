@@ -8,16 +8,38 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <SolidColorBrush x:Key="BrandBrush" Color="#4464E8" />
+            <SolidColorBrush x:Key="BrandBrush" Color="#3370FF" />
             <Style x:Key="NavigationButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Foreground" Value="#E8ECF8" />
+                <Setter Property="Foreground" Value="#1F2329" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
-                <Setter Property="Padding" Value="18,12" />
-                <Setter Property="Margin" Value="8,3" />
+                <Setter Property="Padding" Value="14,10" />
+                <Setter Property="Margin" Value="10,2" />
                 <Setter Property="FontSize" Value="14" />
                 <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="NavigationBackground" Background="{TemplateBinding Background}"
+                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="NavigationBackground" Property="Background" Value="#EFF0F1"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="NavigationBackground" Property="Background" Value="#E1EAFF"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

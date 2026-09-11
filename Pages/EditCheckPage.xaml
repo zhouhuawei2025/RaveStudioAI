@@ -15,7 +15,7 @@
                        Text="请先从项目入口上传人工确认的 SDS。" />
         </StackPanel>
 
-        <TabControl Grid.Row="1" Style="{StaticResource TabControlInLine}">
+        <TabControl x:Name="EditCheckTabs" Grid.Row="1" Style="{StaticResource TabControlInLine}">
             <TabItem Header="OpenQuery生成">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>

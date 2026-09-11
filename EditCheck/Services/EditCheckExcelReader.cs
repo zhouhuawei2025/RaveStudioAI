@@ -18,9 +18,9 @@ public static class EditCheckExcelReader
             FieldOid = ExcelHelper.CellText(row, 4),
             LogicText = ExcelHelper.CellText(row, 5),
             MessageText = ExcelHelper.CellText(row, 6)
-        }).Where(x => !string.IsNullOrWhiteSpace(x.FolderOid) && !string.IsNullOrWhiteSpace(x.FormOid) &&
-                      !string.IsNullOrWhiteSpace(x.FieldOid) && !string.IsNullOrWhiteSpace(x.LogicText) &&
-                      !string.IsNullOrWhiteSpace(x.MessageText)).ToList();
+        }).Where(x => !string.IsNullOrWhiteSpace(x.QueryOid) || !string.IsNullOrWhiteSpace(x.FolderOid) ||
+                      !string.IsNullOrWhiteSpace(x.FormOid) || !string.IsNullOrWhiteSpace(x.FieldOid) ||
+                      !string.IsNullOrWhiteSpace(x.LogicText) || !string.IsNullOrWhiteSpace(x.MessageText)).ToList();
     }
 
     public static List<BlindRow> ReadBlinds(string path)

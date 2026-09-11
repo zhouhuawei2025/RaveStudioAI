@@ -14,7 +14,9 @@ public static class EditCheckConverter
         var finder = new DataPointFinder();
         var folderOid = query.FolderOid.Contains("all", StringComparison.OrdinalIgnoreCase)
             ? "ALLVISIT" : finder.NormalizeFolder(query.FolderOid.Trim());
-        var prompt = $"{folderOid}##{query.FormOid}##{query.LogicText}";
+        if (string.IsNullOrWhiteSpace(query.NormalizedLogicText))
+            throw new InvalidDataException("NormalizedLogicText 为空，请先完成 OpenQuery 前置校验。");
+        var prompt = $"{folderOid}##{query.FormOid}##{query.NormalizedLogicText}";
         LogManager.Write(LogCategory.EditCheck, "query.log", $"开始解析 {query.QueryOid}：{prompt}");
 
         // 每条 Query 单独等待一次 AI，不使用 BatchSize、Task.WhenAny 或固定延时。

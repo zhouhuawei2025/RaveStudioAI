@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using HandyControl.Data;
 using RaveStudioAI.Common;
 using RaveStudioAI.Rws.Models;
 using RaveStudioAI.Rws.Services;
@@ -14,6 +15,7 @@ namespace RaveStudioAI.Pages;
 
 public partial class RwsPage : UserControl
 {
+    private const int PreviewPageSize = 50;
     private readonly RaveRwsService _service = new();
     private readonly QueryExcelService _queryExcel = new();
     private readonly RwsExcelExporter _exporter = new();
@@ -22,9 +24,13 @@ public partial class RwsPage : UserControl
     private readonly ObservableCollection<Form> _forms = [];
     private readonly ObservableCollection<QueryRow> _queries = [];
     private readonly ObservableCollection<History> _history = [];
+    private readonly ObservableCollection<FormPreviewResult> _previewForms = [];
     private RwsProfileFile _configuration = new();
     private RwsTenantProfile? _tenantProfile;
     private List<RaveDatasetRow> _rows = [];
+    private List<RaveDatasetRow> _filteredRows = [];
+    private bool _isFilterActive;
+    private int _currentPreviewPage = 1;
     private bool _loadingProfile;
 
     public RwsPage()
@@ -35,6 +41,7 @@ public partial class RwsPage : UserControl
         FormListBox.ItemsSource = _forms;
         QueryDataGrid.ItemsSource = _queries;
         HistoryListBox.ItemsSource = _history;
+        PreviewFormComboBox.ItemsSource = _previewForms;
         ConfigureListFilters();
         LoadProfiles();
     }
@@ -172,6 +179,7 @@ public partial class RwsPage : UserControl
         string datasetType, bool addHistory)
     {
         _rows = [];
+        ClearPreview();
         DatasetFilterTextBox.Clear();
         var total = subjects.Count * forms.Count;
         var completed = 0;
@@ -186,7 +194,7 @@ public partial class RwsPage : UserControl
                     PasswordBox.Password, study.ProtocolName, study.Environment, subject, form, datasetType);
                 _rows.AddRange(batch);
             }
-            ShowRows(_rows);
+            BuildPreviewForms(_rows);
             DownloadStatusText.Text = $"查询完成：{_rows.Count} 行";
             if (addHistory)
             {
@@ -204,7 +212,7 @@ public partial class RwsPage : UserControl
         }
         catch (Exception ex)
         {
-            ShowRows(_rows);
+            BuildPreviewForms(_rows);
             ShowError($"查询中断，已保留 {_rows.Count} 行", ex);
         }
         finally { SetBusy(false); }
@@ -249,7 +257,12 @@ public partial class RwsPage : UserControl
     private void ApplyDatasetFilter_Click(object sender, RoutedEventArgs e)
     {
         var expression = DatasetFilterTextBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(expression)) { ShowRows(_rows); return; }
+        if (string.IsNullOrWhiteSpace(expression))
+        {
+            ClearFilterState();
+            BuildPreviewForms(_rows);
+            return;
+        }
         if (_rows.Count == 0) { Notice.Warning("当前没有可筛选的数据。"); return; }
         try
         {
@@ -257,9 +270,10 @@ public partial class RwsPage : UserControl
                 "FolderRepeatKey", "StudyEventRepeatKey", "FormOID", "FormRepeatKey", "ItemGroupOID", "RecordPosition", "ItemGroupRepeatKey" }
                 .Concat(_rows.SelectMany(x => x.Values.Keys)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             var predicate = DatasetWhereFilter.Parse(expression, fields);
-            var filtered = _rows.Where(predicate).ToList();
-            ShowRows(filtered);
-            Notice.Success($"筛选完成：{filtered.Count} 行。");
+            _filteredRows = _rows.Where(predicate).ToList();
+            _isFilterActive = true;
+            BuildPreviewForms(_filteredRows);
+            Notice.Success($"筛选完成：{_filteredRows.Count} 行。");
         }
         catch (Exception ex) { Notice.Error(UserMessage(ex)); }
     }
@@ -267,10 +281,84 @@ public partial class RwsPage : UserControl
     private void ClearDatasetFilter_Click(object sender, RoutedEventArgs e)
     {
         DatasetFilterTextBox.Clear();
-        ShowRows(_rows);
+        ClearFilterState();
+        BuildPreviewForms(_rows);
     }
 
-    private void ShowRows(IReadOnlyList<RaveDatasetRow> rows) => DataGrid.ItemsSource = BuildTable(rows).DefaultView;
+    private void PreviewFormComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _currentPreviewPage = 1;
+        RefreshPreview();
+    }
+
+    private void PreviewPagination_PageUpdated(object sender, FunctionEventArgs<int> e)
+    {
+        _currentPreviewPage = e.Info;
+        RefreshPreview();
+    }
+
+    private void BuildPreviewForms(IReadOnlyList<RaveDatasetRow> rows)
+    {
+        var previousForm = (PreviewFormComboBox.SelectedItem as FormPreviewResult)?.FormOID;
+        _previewForms.Clear();
+        foreach (var group in rows.GroupBy(x => x.FormOID ?? "Unknown").OrderBy(x => x.Key))
+        {
+            _previewForms.Add(new FormPreviewResult { FormOID = group.Key, RowCount = group.Count() });
+        }
+
+        PreviewFormComboBox.SelectedItem = _previewForms.FirstOrDefault(x =>
+            x.FormOID.Equals(previousForm, StringComparison.OrdinalIgnoreCase)) ?? _previewForms.FirstOrDefault();
+        _currentPreviewPage = 1;
+        RefreshPreview();
+    }
+
+    private void RefreshPreview()
+    {
+        if (PreviewFormComboBox.SelectedItem is not FormPreviewResult selectedForm)
+        {
+            DataGrid.ItemsSource = new DataTable().DefaultView;
+            PreviewPageInfoText.Text = "第 0 / 0 页";
+            UpdatePreviewPagination(0);
+            return;
+        }
+
+        var formRows = (_isFilterActive ? _filteredRows : _rows)
+            .Where(x => string.Equals(x.FormOID ?? "Unknown", selectedForm.FormOID, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(formRows.Count / (double)PreviewPageSize));
+        _currentPreviewPage = Math.Clamp(_currentPreviewPage, 1, totalPages);
+        var pageRows = formRows.Skip((_currentPreviewPage - 1) * PreviewPageSize).Take(PreviewPageSize).ToList();
+
+        DataGrid.ItemsSource = BuildTable(pageRows).DefaultView;
+        PreviewPageInfoText.Text = $"第 {_currentPreviewPage} / {totalPages} 页，共 {formRows.Count} 行";
+        UpdatePreviewPagination(totalPages);
+    }
+
+    private void ClearPreview()
+    {
+        ClearFilterState();
+        _previewForms.Clear();
+        DataGrid.ItemsSource = new DataTable().DefaultView;
+        PreviewPageInfoText.Text = "第 0 / 0 页";
+        _currentPreviewPage = 1;
+        UpdatePreviewPagination(0);
+    }
+
+    private void ClearFilterState()
+    {
+        _filteredRows = [];
+        _isFilterActive = false;
+    }
+
+    private void UpdatePreviewPagination(int totalPages)
+    {
+        PreviewFormComboBox.IsEnabled = _previewForms.Count > 0;
+        PreviewPagination.IsEnabled = totalPages > 1;
+        PreviewPagination.MaxPageCount = Math.Max(1, totalPages);
+        PreviewPagination.DataCountPerPage = PreviewPageSize;
+        if (PreviewPagination.PageIndex != _currentPreviewPage)
+            PreviewPagination.PageIndex = _currentPreviewPage;
+    }
 
     private void UploadQueries_Click(object sender, RoutedEventArgs e)
     {
@@ -279,7 +367,13 @@ public partial class RwsPage : UserControl
         try
         {
             using var stream = File.OpenRead(dialog.FileName);
-            Replace(_queries, _queryExcel.ReadRows(stream));
+            var rows = _queryExcel.ReadRows(stream);
+            foreach (var row in rows)
+            {
+                row.Status = "Pending";
+                row.ErrorMessage = null;
+            }
+            Replace(_queries, rows);
             UpdateQueryStatus();
         }
         catch (Exception ex) { ShowError("Query Excel 读取失败", ex); }
@@ -322,8 +416,19 @@ public partial class RwsPage : UserControl
         finally { SetBusy(false); }
     }
 
-    private void ExportData_Click(object sender, RoutedEventArgs e) =>
-        SaveBytes(_rows.Count == 0 ? null : _exporter.ExportByForm(_rows), $"RWS_Data_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
+    private void ExportData_Click(object sender, RoutedEventArgs e)
+    {
+        if (_rows.Count == 0)
+        {
+            Notice.Warning("当前没有可导出的数据。");
+            return;
+        }
+
+        var fileName = StudyComboBox.SelectedItem is Study study
+            ? $"{study.ProtocolName}_{DisplayEnvironment(study.Environment)}_DataSet_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
+            : $"RWS_Data_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        SaveBytes(_exporter.ExportByForm(_rows), fileName);
+    }
 
     private void ExportQueries_Click(object sender, RoutedEventArgs e) =>
         SaveBytes(_queries.Count == 0 ? null : _queryExcel.ExportRows(_queries, true), "RWS_Queries.xlsx");
