@@ -34,7 +34,8 @@ public static class EditCheckExcelReader
             FormOid = ExcelHelper.CellText(row, 3),
             FieldOid = ExcelHelper.CellText(row, 4),
             LogicText = ExcelHelper.CellText(row, 5)
-        }).Where(x => !string.IsNullOrWhiteSpace(x.FolderOid) && !string.IsNullOrWhiteSpace(x.FormOid) &&
-                      !string.IsNullOrWhiteSpace(x.FieldOid) && !string.IsNullOrWhiteSpace(x.LogicText)).ToList();
+        }).Where(x => !string.IsNullOrWhiteSpace(x.BlindOid) || !string.IsNullOrWhiteSpace(x.FolderOid) ||
+                      !string.IsNullOrWhiteSpace(x.FormOid) || !string.IsNullOrWhiteSpace(x.FieldOid) ||
+                      !string.IsNullOrWhiteSpace(x.LogicText)).ToList();
     }
 }

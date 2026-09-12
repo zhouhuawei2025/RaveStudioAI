@@ -28,9 +28,13 @@ public sealed class QueryRow : EditCheckRow
 
 public sealed class BlindRow : EditCheckRow
 {
+    private string _normalizedLogicText = string.Empty;
+    private string _validationMessage = string.Empty;
     public string BlindOid { get; set; } = string.Empty;
     public string FolderOid { get; set; } = string.Empty;
     public string FormOid { get; set; } = string.Empty;
     public string FieldOid { get; set; } = string.Empty;
     public string LogicText { get; set; } = string.Empty;
+    public string NormalizedLogicText { get => _normalizedLogicText; set { _normalizedLogicText = value; OnPropertyChanged(); } }
+    public string ValidationMessage { get => _validationMessage; set { _validationMessage = value; OnPropertyChanged(); } }
 }

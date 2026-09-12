@@ -69,7 +69,7 @@ namespace RaveStudioAI.Rws.Models
 
         public ObservableCollection<string> DataTypeList { get; set; } = new ObservableCollection<string> { "raw", "regular"};
 
-        private string _selectedDataType = "regular";
+        private string _selectedDataType = "raw";
         public string SelectedDataType
         {
             get => _selectedDataType;

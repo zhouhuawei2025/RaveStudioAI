@@ -43,6 +43,7 @@ public static class SdsWorkbookReader
         var columns = ExcelHelper.HeaderMap(sheet);
         var formColumn = ExcelHelper.RequiredColumn(columns, sheet.Name, "FormOID");
         var fieldColumn = ExcelHelper.RequiredColumn(columns, sheet.Name, "FieldOID");
+        var ordinalColumn = ExcelHelper.OptionalColumn(columns, "Ordinal");
         var variableColumn = ExcelHelper.OptionalColumn(columns, "VariableOID");
         var logColumn = ExcelHelper.OptionalColumn(columns, "IsLog");
         var result = new List<ProjectField>();
@@ -51,11 +52,13 @@ public static class SdsWorkbookReader
         {
             var formOid = ExcelHelper.CellText(row, formColumn);
             var fieldOid = ExcelHelper.CellText(row, fieldColumn);
+            var ordinalText = ExcelHelper.CellText(row, ordinalColumn);
             if (string.IsNullOrWhiteSpace(formOid) || string.IsNullOrWhiteSpace(fieldOid)) continue;
             result.Add(new ProjectField
             {
                 FormOid = formOid,
                 FieldOid = fieldOid,
+                Ordinal = int.TryParse(ordinalText, out var ordinal) ? ordinal : null,
                 VariableOid = ExcelHelper.CellText(row, variableColumn),
                 IsLog = ExcelHelper.IsTrue(ExcelHelper.CellText(row, logColumn))
             });

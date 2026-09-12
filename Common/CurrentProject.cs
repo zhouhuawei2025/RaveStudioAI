@@ -62,6 +62,7 @@ public sealed class ProjectField
 {
     public string FormOid { get; set; } = string.Empty;
     public string FieldOid { get; set; } = string.Empty;
+    public int? Ordinal { get; set; }
     public string VariableOid { get; set; } = string.Empty;
     public bool IsLog { get; set; }
 }

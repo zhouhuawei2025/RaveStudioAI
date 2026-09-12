@@ -55,21 +55,23 @@ public static class EditCheckConverter
     public static string ConvertBlind(BlindRow blind)
     {
         var finder = new DataPointFinder();
-        var folderOid = blind.FolderOid.Contains("all", StringComparison.OrdinalIgnoreCase)
+        var folderOid = Regex.IsMatch(blind.FolderOid, @"^\s*all[\s_-]*visits?\s*$", RegexOptions.IgnoreCase)
             ? string.Empty : finder.NormalizeFolder(blind.FolderOid.Trim());
         var targets = blind.FieldOid.Split(['、', '/', ',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var logic = blind.LogicText.Split([",", "，", "set", "Set", "SET"], StringSplitOptions.None)[0];
+        var logicSource = string.IsNullOrWhiteSpace(blind.NormalizedLogicText)
+            ? blind.LogicText
+            : blind.NormalizedLogicText;
+        var logic = logicSource.Split([",", "，", "set", "Set", "SET"], StringSplitOptions.None)[0];
         var tokens = ParseRuleText(logic);
         if (tokens.Count == 0) throw new InvalidDataException("LogicText 为空。");
+        var presentField = FindNearestPresentField(blind.FormOid, targets[0], tokens);
 
         var postfix = new List<string>();
-        string? presentField = null;
         foreach (var token in tokens)
         {
             if (token is "and" or "or") { postfix.Add(token); continue; }
             var parts = SplitExpression(token) ?? throw new InvalidDataException($"无法解析表达式：{token}");
             postfix.AddRange(parts);
-            presentField = parts[0];
         }
 
         var steps = new List<string>();
@@ -92,19 +94,67 @@ public static class EditCheckConverter
         return $"|{blind.BlindOid}|TRUE|TRUE{Environment.NewLine}{Environment.NewLine}" + Connect(steps, actions);
     }
 
+    private static string? FindNearestPresentField(string formOid, string firstTarget, IReadOnlyList<string> tokens)
+    {
+        var fields = CurrentProject.Instance.Fields
+            .Where(x => x.FormOid.Equals(formOid, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(x => x.FieldOid, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(x => x.Key, x => x.First(), StringComparer.OrdinalIgnoreCase);
+        if (!fields.TryGetValue(firstTarget, out var target) || target.Ordinal is null)
+            return LastConditionField(tokens, fields);
+
+        return tokens
+            .Select((token, index) => (Parts: token is "and" or "or" ? null : SplitExpression(token), Index: index))
+            .Where(x => x.Parts is not null && fields.TryGetValue(x.Parts[0], out var field) && field.Ordinal is not null)
+            .Select(x => (FieldOid: x.Parts![0], Distance: Math.Abs(fields[x.Parts[0]].Ordinal!.Value - target.Ordinal.Value), x.Index))
+            .OrderBy(x => x.Distance)
+            .ThenByDescending(x => x.Index)
+            .Select(x => x.FieldOid)
+            .FirstOrDefault() ?? LastConditionField(tokens, fields);
+    }
+
+    private static string? LastConditionField(IReadOnlyList<string> tokens, IReadOnlyDictionary<string, ProjectField> fields) =>
+        tokens.Select(x => x is "and" or "or" ? null : SplitExpression(x)?[0])
+            .LastOrDefault(x => x is not null && fields.ContainsKey(x));
+
     private static List<string> ParseRuleText(string input)
     {
-        var matches = Regex.Matches(input, @"\s+(and|or)\s+", RegexOptions.IgnoreCase);
-        var operators = matches.Select(x => x.Groups[1].Value.ToLowerInvariant()).ToList();
-        var conditions = Regex.Split(input, @"\s+(?:and|or)\s+", RegexOptions.IgnoreCase)
-            .Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
-        var result = new List<string>();
-        for (var i = 0; i < conditions.Count; i++)
+        if (string.IsNullOrWhiteSpace(input)) return [];
+        var output = new List<string>();
+        var operators = new Stack<string>();
+        var matches = Regex.Matches(input, @"\(|\)|\b(?:and|or)\b", RegexOptions.IgnoreCase);
+        var position = 0;
+
+        foreach (Match match in matches)
         {
-            result.Add(conditions[i]);
-            if (i > 0) result.Add(operators[i - 1]);
+            var condition = input[position..match.Index].Trim();
+            if (!string.IsNullOrWhiteSpace(condition)) output.Add(condition);
+
+            var token = match.Value.ToLowerInvariant();
+            if (token == "(") operators.Push(token);
+            else if (token == ")")
+            {
+                while (operators.Count > 0 && operators.Peek() != "(") output.Add(operators.Pop());
+                if (operators.Count == 0) throw new InvalidDataException("LogicText 括号不匹配。");
+                operators.Pop();
+            }
+            else
+            {
+                // 没有括号时保持旧版从左到右的处理方式；括号用于明确补全后的 or 逻辑。
+                while (operators.Count > 0 && operators.Peek() != "(") output.Add(operators.Pop());
+                operators.Push(token);
+            }
+            position = match.Index + match.Length;
         }
-        return result;
+
+        var lastCondition = input[position..].Trim();
+        if (!string.IsNullOrWhiteSpace(lastCondition)) output.Add(lastCondition);
+        while (operators.Count > 0)
+        {
+            if (operators.Peek() == "(") throw new InvalidDataException("LogicText 括号不匹配。");
+            output.Add(operators.Pop());
+        }
+        return output;
     }
 
     private static string[]? SplitExpression(string input)
