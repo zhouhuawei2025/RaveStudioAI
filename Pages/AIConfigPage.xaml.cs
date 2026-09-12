@@ -3,6 +3,7 @@ using HandyControl.Data;
 using RaveStudioAI.Common;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -92,6 +93,39 @@ public partial class AIConfigPage : UserControl, INotifyPropertyChanged
         catch (Exception ex)
         {
             Growl.Error(new GrowlInfo { Message = ex.Message, WaitTime = 4 });
+        }
+    }
+
+    private async void TestConnection_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedProfile is null) return;
+
+        TestConnectionButton.IsEnabled = false;
+        TestConnectionButton.Content = "正在测试...";
+        var stopwatch = Stopwatch.StartNew();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+        try
+        {
+            await AIHelper.TestConnectionAsync(SelectedProfile, timeout.Token);
+            Growl.Success(new GrowlInfo
+            {
+                Message = $"AI 连接成功，响应耗时 {stopwatch.Elapsed.TotalSeconds:F1} 秒。",
+                WaitTime = 4
+            });
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            Growl.Error(new GrowlInfo { Message = "AI 连接测试超时（1 分钟）。", WaitTime = 5 });
+        }
+        catch (Exception ex)
+        {
+            Growl.Error(new GrowlInfo { Message = $"AI 连接失败：{ex.Message}", WaitTime = 6 });
+        }
+        finally
+        {
+            stopwatch.Stop();
+            TestConnectionButton.Content = "测试连接";
+            TestConnectionButton.IsEnabled = true;
         }
     }
 
