@@ -67,11 +67,17 @@ public static class EditCheckConverter
         var presentField = FindNearestPresentField(blind.FormOid, targets[0], tokens);
 
         var postfix = new List<string>();
+        string[]? previousExpression = null;
         foreach (var token in tokens)
         {
             if (token is "and" or "or") { postfix.Add(token); continue; }
-            var parts = SplitExpression(token) ?? throw new InvalidDataException($"无法解析表达式：{token}");
+            var parts = SplitExpression(token);
+            if (parts is null && previousExpression is not null &&
+                Regex.IsMatch(token, @"^[-+]?\d+(?:\.\d+)?(?:d|h|min|mon)?$", RegexOptions.IgnoreCase))
+                parts = [previousExpression[0], token, previousExpression[2]];
+            if (parts is null) throw new InvalidDataException($"无法解析表达式：{token}");
             postfix.AddRange(parts);
+            previousExpression = parts;
         }
 
         var steps = new List<string>();

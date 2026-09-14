@@ -25,6 +25,8 @@ public partial class RwsPage : UserControl
     private readonly ObservableCollection<QueryRow> _queries = [];
     private readonly ObservableCollection<History> _history = [];
     private readonly ObservableCollection<FormPreviewResult> _previewForms = [];
+    private readonly ObservableCollection<string> _configuredStudies = [];
+    private readonly ObservableCollection<string> _configuredEnvironments = [];
     private RwsProfileFile _configuration = new();
     private RwsTenantProfile? _tenantProfile;
     private List<RaveDatasetRow> _rows = [];
@@ -42,6 +44,8 @@ public partial class RwsPage : UserControl
         QueryDataGrid.ItemsSource = _queries;
         HistoryListBox.ItemsSource = _history;
         PreviewFormComboBox.ItemsSource = _previewForms;
+        ConfiguredStudyComboBox.ItemsSource = _configuredStudies;
+        ConfiguredEnvironmentComboBox.ItemsSource = _configuredEnvironments;
         ConfigureListFilters();
         LoadProfiles();
     }
@@ -66,12 +70,32 @@ public partial class RwsPage : UserControl
         TenantTextBox.Text = tenantName;
         UsernameTextBox.Text = profile.Username;
         PasswordBox.Password = profile.Password;
+        Replace(_configuredStudies, profile.Studies.Keys.OrderBy(x => x));
+        ConfiguredStudyComboBox.SelectedItem = _configuredStudies.FirstOrDefault();
+        LoadConfiguredEnvironments();
         var first = FirstStudyConfiguration(profile);
-        ConfiguredStudyTextBox.Text = first?.Study ?? string.Empty;
         EnvironmentTextBox.Text = DisplayEnvironment(first?.Environment);
         ConfiguredFormsTextBox.Text = string.Join(Environment.NewLine, first?.Forms ?? []);
         LoadConfiguredForms(first?.Forms);
         _loadingProfile = false;
+    }
+
+    private void NewTenant_Click(object sender, RoutedEventArgs e)
+    {
+        _loadingProfile = true;
+        ProfileComboBox.SelectedItem = null;
+        _tenantProfile = null;
+        ProfileNameTextBox.Clear();
+        TenantTextBox.Clear();
+        UsernameTextBox.Clear();
+        PasswordBox.Clear();
+        Replace(_configuredStudies, []);
+        Replace(_configuredEnvironments, []);
+        ConfiguredStudyComboBox.Text = string.Empty;
+        ConfiguredEnvironmentComboBox.Text = string.Empty;
+        ConfiguredFormsTextBox.Clear();
+        _loadingProfile = false;
+        TenantTextBox.Focus();
     }
 
     private void SaveProfile_Click(object sender, RoutedEventArgs e)
@@ -91,8 +115,8 @@ public partial class RwsPage : UserControl
 
         profile.Username = UsernameTextBox.Text.Trim();
         profile.Password = PasswordBox.Password;
-        var studyOid = ConfiguredStudyTextBox.Text.Trim();
-        var environment = NormalizeEnvironment(EnvironmentTextBox.Text);
+        var studyOid = ConfiguredStudyComboBox.Text.Trim();
+        var environment = NormalizeEnvironment(ConfiguredEnvironmentComboBox.Text);
         if (!string.IsNullOrWhiteSpace(studyOid))
         {
             var studyKey = profile.Studies.Keys.FirstOrDefault(x => x.Equals(studyOid, StringComparison.OrdinalIgnoreCase)) ?? studyOid;
@@ -107,6 +131,43 @@ public partial class RwsPage : UserControl
         Notice.Success($"RWS 配置已保存：{tenantName}");
         LoadProfiles();
         ProfileComboBox.SelectedItem = tenantName;
+    }
+
+    private void ConfiguredStudyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingProfile) return;
+        LoadConfiguredEnvironments();
+    }
+
+    private void ConfiguredEnvironmentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingProfile) return;
+        LoadSelectedConfiguredForms();
+    }
+
+    private void LoadConfiguredEnvironments()
+    {
+        var wasLoading = _loadingProfile;
+        _loadingProfile = true;
+        var study = ConfiguredStudyComboBox.SelectedItem?.ToString() ?? ConfiguredStudyComboBox.Text.Trim();
+        var environments = !string.IsNullOrWhiteSpace(study) && _tenantProfile?.Studies.TryGetValue(study, out var values) == true
+            ? values.Keys.Select(DisplayEnvironment).OrderBy(x => x).ToList()
+            : [];
+        Replace(_configuredEnvironments, environments);
+        ConfiguredEnvironmentComboBox.SelectedItem = _configuredEnvironments.FirstOrDefault();
+        if (_configuredEnvironments.Count == 0) ConfiguredEnvironmentComboBox.Text = string.Empty;
+        _loadingProfile = wasLoading;
+        LoadSelectedConfiguredForms();
+    }
+
+    private void LoadSelectedConfiguredForms()
+    {
+        var study = ConfiguredStudyComboBox.SelectedItem?.ToString() ?? ConfiguredStudyComboBox.Text.Trim();
+        var environment = NormalizeEnvironment(ConfiguredEnvironmentComboBox.SelectedItem?.ToString() ?? ConfiguredEnvironmentComboBox.Text);
+        List<string>? forms = null;
+        if (!string.IsNullOrWhiteSpace(study) && _tenantProfile?.Studies.TryGetValue(study, out var environments) == true)
+            forms = environments.FirstOrDefault(x => x.Key.Equals(environment, StringComparison.OrdinalIgnoreCase)).Value;
+        ConfiguredFormsTextBox.Text = string.Join(Environment.NewLine, forms ?? []);
     }
 
     private async void Login_Click(object sender, RoutedEventArgs e)
@@ -137,7 +198,13 @@ public partial class RwsPage : UserControl
     {
         if (_loadingProfile || StudyComboBox.SelectedItem is not Study study || !ValidateCredentials(false)) return;
         EnvironmentTextBox.Text = DisplayEnvironment(study.Environment);
-        ConfiguredStudyTextBox.Text = study.ProtocolName;
+        if (!_configuredStudies.Contains(study.ProtocolName, StringComparer.OrdinalIgnoreCase))
+            _configuredStudies.Add(study.ProtocolName);
+        ConfiguredStudyComboBox.SelectedItem = _configuredStudies.First(x => x.Equals(study.ProtocolName, StringComparison.OrdinalIgnoreCase));
+        var displayEnvironment = DisplayEnvironment(study.Environment);
+        if (!_configuredEnvironments.Contains(displayEnvironment, StringComparer.OrdinalIgnoreCase))
+            _configuredEnvironments.Add(displayEnvironment);
+        ConfiguredEnvironmentComboBox.SelectedItem = _configuredEnvironments.First(x => x.Equals(displayEnvironment, StringComparison.OrdinalIgnoreCase));
         var configuredForms = FindStudyConfiguration(study);
         ConfiguredFormsTextBox.Text = string.Join(Environment.NewLine, configuredForms ?? []);
         SetBusy(true, "正在加载受试者……");

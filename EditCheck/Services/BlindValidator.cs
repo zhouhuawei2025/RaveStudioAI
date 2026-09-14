@@ -200,6 +200,8 @@ public static class BlindValidator
 
     private static ParsedExpression ParseExpression(string text)
     {
+        text = (text ?? string.Empty).Replace('（', '(').Replace('）', ')');
+        text = Regex.Replace(text, @"\(\s*(?:the\s+)?same\s+visit\s*\)", string.Empty, RegexOptions.IgnoreCase);
         text = Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim();
         if (string.IsNullOrWhiteSpace(text)) throw new InvalidOperationException("LogicText 条件为空");
         if (text.Contains('(') || text.Contains(')') || text.Contains('（') || text.Contains('）'))
@@ -223,16 +225,27 @@ public static class BlindValidator
             throw new InvalidOperationException("and/or 两侧必须是完整条件");
 
         var parsedConditions = new List<Condition>();
-        foreach (var conditionText in conditions)
+        for (var index = 0; index < conditions.Count; index++)
         {
+            var conditionText = conditions[index];
             if (Regex.IsMatch(conditionText, @"^NOW\s+is\s+present$", RegexOptions.IgnoreCase))
             {
-                parsedConditions.Add(new Condition("NOW", "is present", "NOW is present"));
+                parsedConditions.Add(new Condition("NOW", "is present", string.Empty, "NOW is present"));
                 continue;
             }
 
             var match = Comparison.Match(conditionText);
-            if (!match.Success) throw new InvalidOperationException($"表达式不完整或缺少比较操作符：{conditionText}");
+            if (!match.Success)
+            {
+                if (index > 0 && connectors[index - 1] == "or" &&
+                    Regex.IsMatch(conditionText, @"^[-+]?\d+(?:\.\d+)?(?:d|h|min|mon)?$", RegexOptions.IgnoreCase))
+                {
+                    var previous = parsedConditions[^1];
+                    parsedConditions.Add(new Condition(previous.LeftField, conditionText, previous.Operator, conditionText));
+                    continue;
+                }
+                throw new InvalidOperationException($"表达式不完整或缺少比较操作符：{conditionText}");
+            }
             var left = match.Groups[1].Value.Trim();
             var right = match.Groups[3].Value.Trim();
             var op = match.Groups[2].Value;
@@ -240,7 +253,7 @@ public static class BlindValidator
                 throw new InvalidOperationException($"表达式不完整：{conditionText}");
             if (!IsSimpleField(left))
                 throw new InvalidOperationException($"无法识别 LogicText 字段：{left}");
-            parsedConditions.Add(new Condition(left, right, $"{left} {op} {right}"));
+            parsedConditions.Add(new Condition(left, right, op, $"{left} {op} {right}"));
         }
         return new ParsedExpression(parsedConditions, connectors);
     }
@@ -284,7 +297,7 @@ public static class BlindValidator
         row.HasError = true;
     }
 
-    private sealed record Condition(string LeftField, string RightValue, string Text);
+    private sealed record Condition(string LeftField, string RightValue, string Operator, string Text);
     private sealed record ParsedExpression(IReadOnlyList<Condition> Conditions, IReadOnlyList<string> Connectors)
     {
         public string Text

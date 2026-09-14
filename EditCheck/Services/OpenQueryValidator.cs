@@ -56,6 +56,7 @@ public static class OpenQueryValidator
     private static string NormalizeOperators(string text)
     {
         var result = (text ?? string.Empty).Replace('（', '(').Replace('）', ')').Replace('，', ',').Replace('–', '-').Replace('—', '-');
+        result = Regex.Replace(result, @"\(\s*(?:the\s+)?same\s+visit\s*\)", string.Empty, RegexOptions.IgnoreCase);
         result = Regex.Replace(result, @"\bis\s+not\s+empty\b", "<> null", RegexOptions.IgnoreCase);
         result = Regex.Replace(result, @"\bis\s+empty\b", "= null", RegexOptions.IgnoreCase);
         result = Regex.Replace(result, @"\s*\.\s*", ".");
@@ -90,10 +91,10 @@ public static class OpenQueryValidator
                 var target = candidates.FirstOrDefault(x => x.Oid.Equals(targetForm, StringComparison.OrdinalIgnoreCase));
                 if (target is not null) return ValidateAddress(first, target.Oid, field);
                 if (candidates.Count == 1) return ValidateAddress(first, candidates[0].Oid, field);
-                if (candidates.Count == 0) throw new InvalidDataException($"Folder {first} 中找不到 Field {field}");
-                throw new InvalidDataException($"Folder {first} 中的 Field {field} 无法唯一确定 Form");
+                if (candidates.Count == 0) throw new InvalidDataException($"访视 {first} 中找不到字段 {field}");
+                throw new InvalidDataException($"访视 {first} 中的字段 {field} 存在于多张表单，请确定具体表单OID");
             }
-            throw new InvalidDataException($"{first} 既不是 FolderOID，也不是 FormOID");
+            throw new InvalidDataException($"{first}存在笔误");
         }
         if (parts.Length != 1) throw new InvalidDataException($"无法识别数据点 {token}");
 
@@ -106,7 +107,7 @@ public static class OpenQueryValidator
                 .SelectMany(form => form.FolderOids.Select(folder => $"{folder}.{form.Oid}.{field.FieldOid}")))
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         if (locations.Count == 1) return locations[0];
-        if (locations.Count == 0) throw new InvalidDataException($"EDC 中不存在 Field {bareField}");
+        if (locations.Count == 0) throw new InvalidDataException($"EDC 中不存在字段 {bareField}");
         throw new InvalidDataException($"裸字段 {bareField} 无法唯一定位");
     }
 
@@ -123,16 +124,16 @@ public static class OpenQueryValidator
     private static string ValidateAddress(string folder, string form, string field)
     {
         if (folder.Equals("ALLVISIT", StringComparison.OrdinalIgnoreCase)) { EnsureField(form, field); return $"ALLVISIT.{form}.{field}"; }
-        if (!HasFolder(folder)) throw new InvalidDataException($"Folder {folder} 不存在");
+        if (!HasFolder(folder)) throw new InvalidDataException($"访视{folder} 不存在");
         EnsureField(form, field);
-        if (!FormInFolder(form, folder)) throw new InvalidDataException($"Form {form} 不位于 Folder {folder}");
+        if (!FormInFolder(form, folder)) throw new InvalidDataException($"访视 {folder}中没有表单{form} ");
         return $"{folder}.{form}.{field}";
     }
 
     private static void EnsureField(string form, string field)
     {
-        if (!HasForm(form)) throw new InvalidDataException($"Form {form} 不存在");
-        if (!FieldExists(form, field)) throw new InvalidDataException($"Form {form} 中不存在 Field {field}");
+        if (!HasForm(form)) throw new InvalidDataException($"表单 {form} 不存在");
+        if (!FieldExists(form, field)) throw new InvalidDataException($"表单{form} 中没有字段 {field}");
     }
 
     private static void ValidateSyntax(string expression, List<string> errors)

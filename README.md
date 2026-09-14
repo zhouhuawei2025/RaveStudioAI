@@ -92,12 +92,27 @@ Rave 生产环境返回的 `Environment` 可能是空字符串，因此生产环
         "PROJECT001": {
           "UAT": ["DM", "AE"],
           "": ["DM", "AE"]
+        },
+        "PROJECT002": {
+          "DEV": ["SUBJ", "VS"],
+          "UAT": ["SUBJ", "VS", "AE"]
+        }
+      }
+    },
+    "another-subdomain": {
+      "username": "another-username",
+      "password": "another-password",
+      "studies": {
+        "PROJECT101": {
+          "": ["DM", "AE", "CM"]
         }
       }
     }
   }
 }
 ```
+
+`tenants`、`studies` 和每个试验下的环境虽然使用 JSON 对象而不是数组，但都可以包含任意多个条目，并以名称作为唯一 key，便于按租户、试验和环境直接查找。
 
 Forms 必须按租户、试验和环境在配置中维护，不会使用项目入口上传的 SDS Forms 自动替代。用户连接 RWS 后可以自由切换当前账号可见的试验；程序会根据所选试验的 `ProtocolName/Oid + Environment` 查找对应 Forms。
 

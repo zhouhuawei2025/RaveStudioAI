@@ -26,7 +26,9 @@
                 <TextBlock Grid.Column="6" Text="密码:" Margin="12,0,0,0" VerticalAlignment="Center"/>
                 <PasswordBox x:Name="PasswordBox" Grid.Column="7"/>
                 <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="14,0,0,0">
+                    <Button Content="新增租户" Click="NewTenant_Click"/>
                     <Button Content="保存配置" Click="SaveProfile_Click"
+                            Margin="8,0,0,0"
                             Style="{StaticResource ButtonSuccess}"/>
                     <Button x:Name="LoginButton" Content="连接 RWS" Margin="8,0,0,0" 
                             Click="Login_Click"
@@ -157,14 +159,22 @@
 
             <TabItem Header="配置详情">
                 <Grid Margin="16">
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="租户名称" Width="90" VerticalAlignment="Center"/><TextBox x:Name="ProfileNameTextBox" Width="220" IsReadOnly="True"/>
-                        <TextBlock Text="预设试验" Width="90" Margin="24,0,0,0" VerticalAlignment="Center"/><TextBox x:Name="ConfiguredStudyTextBox" Width="220"/>
+                        <TextBlock Text="预设试验" Width="90" Margin="24,0,0,0" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="ConfiguredStudyComboBox" Width="220" IsEditable="True"
+                                  SelectionChanged="ConfiguredStudyComboBox_SelectionChanged"/>
                     </StackPanel>
-                    <TextBlock Grid.Row="1" Text="配置文件会在本机以明文保存密码，请勿提交包含真实密码的配置文件。" Foreground="#B45309" Margin="0,12,0,0"/>
-                    <TextBlock Grid.Row="2" Text="预设表单（每行一个，也可用逗号分隔）" Margin="0,18,0,8"/>
-                    <TextBox x:Name="ConfiguredFormsTextBox" Grid.Row="3" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,0">
+                        <TextBlock Text="预设环境" Width="90" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="ConfiguredEnvironmentComboBox" Width="220" IsEditable="True"
+                                  SelectionChanged="ConfiguredEnvironmentComboBox_SelectionChanged"/>
+                        <TextBlock Text="生产环境填写或选择 Prod" Foreground="#6C7892" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Row="2" Text="配置文件会在本机以明文保存密码，请勿提交包含真实密码的配置文件。" Foreground="#B45309" Margin="0,12,0,0"/>
+                    <TextBlock Grid.Row="3" Text="预设表单（每行一个，也可用逗号分隔）" Margin="0,18,0,8"/>
+                    <TextBox x:Name="ConfiguredFormsTextBox" Grid.Row="4" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
                 </Grid>
             </TabItem>
         </TabControl>

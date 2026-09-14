@@ -3,6 +3,16 @@
         <StackPanel Margin="0,0,0,16"><TextBlock Text="SetDataPointVisible 生成" FontSize="28" FontWeight="SemiBold" Foreground="#26324A"/><TextBlock x:Name="SdsStatusText" Margin="0,7,0,0" Foreground="#6C7892"/></StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal"><Button Content="上传 Blind Excel" Style="{StaticResource ButtonPrimary}" Click="Upload_Click"/><Button x:Name="RunButton" Content="批量生成" Margin="10,0,0,0" Style="{StaticResource ButtonSuccess}" Click="Run_Click"/><Button Content="清空数据行" Margin="10,0,0,0" Click="ClearRows_Click"/><TextBlock x:Name="ProgressText" Margin="18,0,0,0" VerticalAlignment="Center"/></StackPanel>
         <DataGrid Grid.Row="2" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Style="{StaticResource DataGrid.Small}">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridCell">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="#111827"/>
+                            <Setter Property="Background" Value="#DCEBFF"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Style.Triggers>
