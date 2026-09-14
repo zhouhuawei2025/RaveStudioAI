@@ -30,6 +30,7 @@ public sealed class BlindRow : EditCheckRow
 {
     private string _normalizedLogicText = string.Empty;
     private string _validationMessage = string.Empty;
+    private bool _hasSuggestion;
     public string BlindOid { get; set; } = string.Empty;
     public string FolderOid { get; set; } = string.Empty;
     public string FormOid { get; set; } = string.Empty;
@@ -37,4 +38,5 @@ public sealed class BlindRow : EditCheckRow
     public string LogicText { get; set; } = string.Empty;
     public string NormalizedLogicText { get => _normalizedLogicText; set { _normalizedLogicText = value; OnPropertyChanged(); } }
     public string ValidationMessage { get => _validationMessage; set { _validationMessage = value; OnPropertyChanged(); } }
+    public bool HasSuggestion { get => _hasSuggestion; set { _hasSuggestion = value; OnPropertyChanged(); } }
 }

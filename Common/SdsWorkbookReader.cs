@@ -11,10 +11,12 @@ public static class SdsWorkbookReader
         var fieldsSheet = ExcelHelper.RequiredSheet(workbook, "Fields");
         var foldersSheet = ExcelHelper.RequiredSheet(workbook, "Folders");
 
+        var forms = ReadForms(formsSheet);
+        var activeFormOids = forms.Select(x => x.Oid).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var result = new SdsReadResult
         {
-            Forms = ReadForms(formsSheet),
-            Fields = ReadFields(fieldsSheet),
+            Forms = forms,
+            Fields = ReadFields(fieldsSheet, activeFormOids),
             Folders = ReadFolders(foldersSheet)
         };
 
@@ -27,10 +29,13 @@ public static class SdsWorkbookReader
         var columns = ExcelHelper.HeaderMap(sheet);
         var oidColumn = ExcelHelper.RequiredColumn(columns, sheet.Name, "OID");
         var nameColumn = ExcelHelper.OptionalColumn(columns, "DraftFormName", "Name");
+        var activeColumn = ExcelHelper.OptionalColumn(columns, "DraftFormActive", "FormActive");
+        if (activeColumn <= 0) activeColumn = 4;
         var result = new List<ProjectForm>();
 
         foreach (var row in ExcelHelper.DataRows(sheet))
         {
+            if (!ExcelHelper.IsTrue(ExcelHelper.CellText(row, activeColumn))) continue;
             var oid = ExcelHelper.CellText(row, oidColumn);
             if (string.IsNullOrWhiteSpace(oid)) continue;
             result.Add(new ProjectForm { Oid = oid, Name = ExcelHelper.CellText(row, nameColumn) });
@@ -38,7 +43,7 @@ public static class SdsWorkbookReader
         return result.GroupBy(x => x.Oid, StringComparer.OrdinalIgnoreCase).Select(x => x.First()).ToList();
     }
 
-    private static List<ProjectField> ReadFields(IXLWorksheet sheet)
+    private static List<ProjectField> ReadFields(IXLWorksheet sheet, IReadOnlySet<string> activeFormOids)
     {
         var columns = ExcelHelper.HeaderMap(sheet);
         var formColumn = ExcelHelper.RequiredColumn(columns, sheet.Name, "FormOID");
@@ -46,14 +51,18 @@ public static class SdsWorkbookReader
         var ordinalColumn = ExcelHelper.OptionalColumn(columns, "Ordinal");
         var variableColumn = ExcelHelper.OptionalColumn(columns, "VariableOID");
         var logColumn = ExcelHelper.OptionalColumn(columns, "IsLog");
+        var activeColumn = ExcelHelper.OptionalColumn(columns, "DraftFieldActive", "FieldActive");
+        if (activeColumn <= 0) activeColumn = 6;
         var result = new List<ProjectField>();
 
         foreach (var row in ExcelHelper.DataRows(sheet))
         {
+            if (!ExcelHelper.IsTrue(ExcelHelper.CellText(row, activeColumn))) continue;
             var formOid = ExcelHelper.CellText(row, formColumn);
             var fieldOid = ExcelHelper.CellText(row, fieldColumn);
             var ordinalText = ExcelHelper.CellText(row, ordinalColumn);
             if (string.IsNullOrWhiteSpace(formOid) || string.IsNullOrWhiteSpace(fieldOid)) continue;
+            if (!activeFormOids.Contains(formOid)) continue;
             result.Add(new ProjectField
             {
                 FormOid = formOid,

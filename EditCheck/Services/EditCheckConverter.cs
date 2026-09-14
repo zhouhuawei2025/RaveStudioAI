@@ -58,9 +58,8 @@ public static class EditCheckConverter
         var folderOid = Regex.IsMatch(blind.FolderOid, @"^\s*all[\s_-]*visits?\s*$", RegexOptions.IgnoreCase)
             ? string.Empty : finder.NormalizeFolder(blind.FolderOid.Trim());
         var targets = blind.FieldOid.Split(['、', '/', ',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var logicSource = string.IsNullOrWhiteSpace(blind.NormalizedLogicText)
-            ? blind.LogicText
-            : blind.NormalizedLogicText;
+        // 建议补全结果只供人工审阅；真正生成始终使用用户上传的 LogicText。
+        var logicSource = blind.LogicText;
         var logic = logicSource.Split([",", "，", "set", "Set", "SET"], StringSplitOptions.None)[0];
         var tokens = ParseRuleText(logic);
         if (tokens.Count == 0) throw new InvalidDataException("LogicText 为空。");

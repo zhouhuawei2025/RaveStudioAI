@@ -21,6 +21,7 @@ public static class BlindValidator
             row.HasError = false;
             row.ValidationMessage = string.Empty;
             row.NormalizedLogicText = string.Empty;
+            row.HasSuggestion = false;
         }
 
         ValidateDuplicateBlindOids(rows);
@@ -31,24 +32,19 @@ public static class BlindValidator
             if (expression is not null) parsed[row] = expression;
         }
 
-        // 先完成整份原始文件校验；原始输入有任何错误时，不建立依赖、更不自动填补。
-        if (rows.Any(x => x.HasError))
-        {
-            foreach (var row in rows.Where(x => !x.HasError))
-                row.ValidationMessage = "原始校验通过；因文件中存在其他错误，未执行依赖补全";
-            return false;
-        }
-
         var rules = BuildRuleIndex(rows, parsed);
 
-        foreach (var row in rows)
+        // 每一行独立生成建议。某行校验失败不再阻断其他可解析行的建议补全。
+        foreach (var row in rows.Where(parsed.ContainsKey))
         {
             try
             {
                 var scope = Scope(row);
+                var original = parsed[row].Text;
                 row.NormalizedLogicText = ExpandExpression(
                     parsed[row], scope, rules, new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Text;
-                row.ValidationMessage = "校验通过";
+                row.HasSuggestion = !row.NormalizedLogicText.Equals(original, StringComparison.OrdinalIgnoreCase);
+                if (row.HasSuggestion) AddWarning(row, "已补充上游条件，请人工确认");
             }
             catch (InvalidOperationException ex)
             {
@@ -114,7 +110,7 @@ public static class BlindValidator
         IReadOnlyDictionary<BlindRow, ParsedExpression> parsed)
     {
         var candidates = new Dictionary<string, List<Rule>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var row in rows)
+        foreach (var row in rows.Where(x => !x.HasError && parsed.ContainsKey(x)))
         {
             var scope = Scope(row);
             foreach (var target in TargetFields(row.FieldOid))
@@ -295,6 +291,13 @@ public static class BlindValidator
         if (!messages.Contains(message, StringComparer.OrdinalIgnoreCase)) messages.Add(message);
         row.ValidationMessage = string.Join("；", messages);
         row.HasError = true;
+    }
+
+    private static void AddWarning(BlindRow row, string message)
+    {
+        var messages = row.ValidationMessage.Split('；', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        if (!messages.Contains(message, StringComparer.OrdinalIgnoreCase)) messages.Add(message);
+        row.ValidationMessage = string.Join("；", messages);
     }
 
     private sealed record Condition(string LeftField, string RightValue, string Operator, string Text);

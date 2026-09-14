@@ -141,7 +141,7 @@ public static class OpenQueryValidator
         var balance = 0;
         foreach (var character in expression) { if (character == '(') balance++; else if (character == ')' && --balance < 0) break; }
         if (balance != 0) errors.Add("表达式括号不匹配");
-        if (Regex.IsMatch(expression, @"\b(?:AND|OR)\s+[-+]?\d+(?:\.\d+)?(?:D|H|MIN|MON)?\b", RegexOptions.IgnoreCase))
+        if (Regex.IsMatch(expression, @"\bAND\s+[-+]?\d+(?:\.\d+)?(?:D|H|MIN|MON)?\b", RegexOptions.IgnoreCase))
             errors.Add("逻辑连接词后只有常量，条件书写不完整");
     }
 
