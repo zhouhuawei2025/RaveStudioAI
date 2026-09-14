@@ -158,7 +158,7 @@ SiteOID, Subject, FolderOID, FolderRepeatNumber, FormOID, FormRepeatNumber, Reco
 
 ## OpenQuery 前置校验
 
-OpenQuery 上传文件后，程序保留原始 `LogicText`，同时生成 `NormalizedLogicText`。只有文件中的所有行都通过目标数据点、表达式数据点和结构校验，才允许调用 AI；AI 使用 `NormalizedLogicText`，不使用原始文本。校验失败时，用户在线下修改源文件并重新上传。
+OpenQuery 上传文件后，程序保留原始 `LogicText`，并为每个可解析行生成建议规范结果。确定性错误会标红，但不会阻止其他行继续校验，也不会剥夺用户调用 AI 的权利。用户选择正常或强制生成时，AI 始终使用原始 `LogicText`；建议规范结果只供审阅，不会覆盖生产输入。
 
 ```mermaid
 flowchart TD
@@ -213,15 +213,15 @@ flowchart TD
 
     P --> Q{结构完整吗?}
     Q -- 否 --> X
-    Q -- 是 --> R[保存 NormalizedLogicText]
-    R --> S{所有行全部通过吗?}
+    Q -- 是 --> R[保存建议规范结果]
+    R --> S[显示校验信息]
     X --> S
-    S -- 否 --> T[禁用 AI 生成并显示错误]
-    T --> U[用户线下修改源文件]
+    S --> T{用户如何处理?}
+    T -- 线下修改 --> U[修改原 LogicText 后重新上传]
     U --> A
-    S -- 是 --> V[启用生成按钮]
-    V --> W[NormalizedLogicText 作为 AI 输入]
-    W --> Y[生成 OpenQuery ECS 并记录日志]
+    T -- 接受风险 --> V[正常或强制调用 AI]
+    V --> W[原始 LogicText 作为 AI 输入]
+    W --> Y[逐行生成 OpenQuery ECS 并记录日志]
 ```
 
 数据点省略规则：

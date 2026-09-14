@@ -4,6 +4,7 @@ using RaveStudioAI.EditCheck.Models;
 using RaveStudioAI.EditCheck.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -71,12 +72,19 @@ public partial class SetDataPointVisiblePage : UserControl
             var path = Path.Combine(_outputDirectory, "BlindValidation.xlsx");
             BlindExcelExporter.Export(Rows, path);
             Notice.Success($"审阅文件已导出：{path}");
+            OpenOutputDirectory();
         }
         catch (Exception ex)
         {
             LogManager.WriteException(LogCategory.EditCheck, "editcheck.log", ex, "导出 Blind 审阅文件失败");
             Notice.Error($"导出 Blind 审阅文件失败：{ex.Message}");
         }
+    }
+
+    private void OpenOutputDirectory()
+    {
+        Directory.CreateDirectory(_outputDirectory);
+        Process.Start(new ProcessStartInfo { FileName = _outputDirectory, UseShellExecute = true });
     }
 
     private void Run_Click(object sender, RoutedEventArgs e)
