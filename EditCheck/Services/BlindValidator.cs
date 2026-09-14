@@ -129,6 +129,10 @@ public static class BlindValidator
         IReadOnlyDictionary<string, List<Rule>> rules,
         HashSet<string> visiting)
     {
+        // 带括号的表达式视为人工已经确认的分组，保留原意，不再自动重排或继续补全。
+        if (expression.HasGrouping)
+            return new ExpandedExpression(expression.Text, expression.Conditions.Select(x => x.Text).ToList());
+
         if (expression.Connectors.Contains("or", StringComparer.OrdinalIgnoreCase))
         {
             var dependencies = expression.Conditions
@@ -200,8 +204,8 @@ public static class BlindValidator
         text = Regex.Replace(text, @"\(\s*(?:the\s+)?same\s+visit\s*\)", string.Empty, RegexOptions.IgnoreCase);
         text = Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim();
         if (string.IsNullOrWhiteSpace(text)) throw new InvalidOperationException("LogicText 条件为空");
-        if (text.Contains('(') || text.Contains(')') || text.Contains('（') || text.Contains('）'))
-            throw new InvalidOperationException("SetDataPointVisible 暂不支持括号表达式");
+        EnsureBalancedParentheses(text);
+        var hasGrouping = text.Contains('(') || text.Contains(')');
 
         foreach (Match match in LogicalWord.Matches(text))
         {
@@ -212,10 +216,12 @@ public static class BlindValidator
                 throw new InvalidOperationException("and/or 前后必须有空格");
         }
 
-        var conditions = LogicalSeparator.Split(text)
+        // 括号只表示逻辑分组；去掉括号副本后复用既有字段、操作符和完整性校验。
+        var validationText = text.Replace('(', ' ').Replace(')', ' ');
+        var conditions = LogicalSeparator.Split(validationText)
             .Where((_, index) => index % 2 == 0)
             .Select(x => x.Trim()).ToList();
-        var connectors = LogicalSeparator.Matches(text)
+        var connectors = LogicalSeparator.Matches(validationText)
             .Select(x => x.Groups[1].Value.ToLowerInvariant()).ToList();
         if (conditions.Count == 0 || conditions.Any(string.IsNullOrWhiteSpace) || connectors.Count != conditions.Count - 1)
             throw new InvalidOperationException("and/or 两侧必须是完整条件");
@@ -251,7 +257,19 @@ public static class BlindValidator
                 throw new InvalidOperationException($"无法识别 LogicText 字段：{left}");
             parsedConditions.Add(new Condition(left, right, op, $"{left} {op} {right}"));
         }
-        return new ParsedExpression(parsedConditions, connectors);
+        return new ParsedExpression(parsedConditions, connectors, hasGrouping ? text : null);
+    }
+
+    private static void EnsureBalancedParentheses(string text)
+    {
+        var depth = 0;
+        foreach (var character in text)
+        {
+            if (character == '(') depth++;
+            else if (character == ')' && --depth < 0)
+                throw new InvalidOperationException("LogicText 括号不匹配");
+        }
+        if (depth != 0) throw new InvalidOperationException("LogicText 括号不匹配");
     }
 
     // 与既有转换器保持相同规则：只取逗号或 set 之前的条件文本。
@@ -301,12 +319,14 @@ public static class BlindValidator
     }
 
     private sealed record Condition(string LeftField, string RightValue, string Operator, string Text);
-    private sealed record ParsedExpression(IReadOnlyList<Condition> Conditions, IReadOnlyList<string> Connectors)
+    private sealed record ParsedExpression(IReadOnlyList<Condition> Conditions, IReadOnlyList<string> Connectors, string? GroupedText)
     {
+        public bool HasGrouping => GroupedText is not null;
         public string Text
         {
             get
             {
+                if (GroupedText is not null) return GroupedText;
                 var values = new List<string>();
                 for (var index = 0; index < Conditions.Count; index++)
                 {

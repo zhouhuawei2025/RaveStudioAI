@@ -40,7 +40,16 @@
                     </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
-            <DataGrid.Columns><DataGridTextColumn Header="BlindOID" Binding="{Binding BlindOid}" Width="120" IsReadOnly="True"/><DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOid}" Width="100" IsReadOnly="True"/><DataGridTextColumn Header="FormOID" Binding="{Binding FormOid}" Width="100" IsReadOnly="True"/><DataGridTextColumn Header="FieldOID" Binding="{Binding FieldOid}" Width="150" IsReadOnly="True"/><DataGridTextColumn Header="LogicText" Binding="{Binding LogicText}" Width="240" IsReadOnly="True"/><DataGridTextColumn Header="建议补全结果" Binding="{Binding NormalizedLogicText}" Width="280" IsReadOnly="True"/><DataGridTextColumn Header="校验信息" Binding="{Binding ValidationMessage}" Width="260" IsReadOnly="True"/><DataGridCheckBoxColumn Header="Error" Binding="{Binding HasError, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60" IsReadOnly="False"/></DataGrid.Columns>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="BlindOID" Binding="{Binding BlindOid}" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="FolderOID" Binding="{Binding FolderOid}" Width="100" IsReadOnly="True"/>
+                <DataGridTextColumn Header="FormOID" Binding="{Binding FormOid}" Width="100" IsReadOnly="True"/>
+                <DataGridTextColumn Header="FieldOID" Binding="{Binding FieldOid}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="LogicText" Binding="{Binding LogicText}" Width="240" IsReadOnly="True"/>
+                <DataGridTextColumn Header="NormalizedLogicText" Binding="{Binding NormalizedLogicText}" Width="280" IsReadOnly="True"/>
+                <DataGridTextColumn Header="校验信息" Binding="{Binding ValidationMessage}" Width="260" IsReadOnly="True"/>
+                <DataGridCheckBoxColumn Header="Error" Binding="{Binding HasError, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="60" IsReadOnly="False"/>
+            </DataGrid.Columns>
         </DataGrid>
         <DockPanel Grid.Row="3" Margin="0,10,0,7">
             <Button DockPanel.Dock="Right" Content="复制结果" Click="Copy_Click" Style="{StaticResource ButtonSuccess.Small}"/>
