@@ -158,6 +158,11 @@ SiteOID, Subject, FolderOID, FolderRepeatNumber, FormOID, FormRepeatNumber, Reco
 
 ## OpenQuery 前置校验
 
+面向业务用户的填写说明已按场景拆分：
+
+- [OpenQuery 表达式填写说明](Docs/OpenQueryExpressionGuide.md)
+- [Blind（SetDataPointVisible）表达式填写说明](Docs/BlindExpressionGuide.md)
+
 OpenQuery 上传文件后，程序保留原始 `LogicText`，并为每个可解析行生成建议规范结果。确定性错误会标红，但不会阻止其他行继续校验，也不会剥夺用户调用 AI 的权利。用户选择正常或强制生成时，AI 始终使用原始 `LogicText`；建议规范结果只供审阅，不会覆盖生产输入。
 
 ```mermaid

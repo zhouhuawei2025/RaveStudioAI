@@ -162,8 +162,10 @@
                     </DataGrid>
                 </Grid>
             </TabItem>
+        </TabControl>
 
-            <TabItem Header="配置详情">
+        <!-- 配置详情不再作为可见选项卡；保留隐藏控件供既有配置读写逻辑维护状态。 -->
+        <Grid Visibility="Collapsed">
                 <Grid Margin="16">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal">
@@ -182,7 +184,6 @@
                     <TextBlock Grid.Row="3" Text="预设表单（每行一个，也可用逗号分隔）" Margin="0,18,0,8"/>
                     <TextBox x:Name="ConfiguredFormsTextBox" Grid.Row="4" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
                 </Grid>
-            </TabItem>
-        </TabControl>
+        </Grid>
     </Grid>
 </UserControl>
