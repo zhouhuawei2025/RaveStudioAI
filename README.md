@@ -6,7 +6,7 @@
 
 ## CRF Builder
 
-详见 [使用说明](Docs/RaveStuido.pptx)
+详见 [使用说明](Docs/RaveStudio.pptx)
 
 ## Matrix Builder
 
