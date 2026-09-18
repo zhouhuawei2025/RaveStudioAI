@@ -10,7 +10,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel>
-                <TextBlock Text="Rave Studio AI" FontSize="32" FontWeight="SemiBold" Foreground="#26324A" />
+                <TextBlock Text="My Rave Studio" FontSize="32" FontWeight="SemiBold" Foreground="#26324A" />
                 <TextBlock Text="请先上传系统导出的 Rave SDS文件，后续功能将以此文件为准。"
                            Margin="0,9,0,0" FontSize="15" Foreground="#6C7892" />
             </StackPanel>

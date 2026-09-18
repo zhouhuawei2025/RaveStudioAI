@@ -75,7 +75,7 @@ public partial class SdsPage : UserControl
             _tables.Clear();
             LogText.Text = $"CRF 解析失败：{ex.Message}";
         }
-        finally { SetBusy(false); }
+        finally { UploadButton.IsEnabled = true ; }
     }
 
     private void ExtractForms_Click(object sender, RoutedEventArgs e)

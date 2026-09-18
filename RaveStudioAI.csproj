@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -8,7 +8,11 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>RaveStudioAI</AssemblyName>
     <RootNamespace>RaveStudioAI</RootNamespace>
+    <ApplicationIcon>cat_pumpkin_halloween_22020.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="cat_pumpkin_halloween_22020.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.104.2" />

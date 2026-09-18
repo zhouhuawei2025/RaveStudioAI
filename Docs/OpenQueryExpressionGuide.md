@@ -8,7 +8,7 @@
 
 下表列名与 OpenQuery 页面基本一致。业务示例取自真实项目素材并做了少量格式整理；实际规范结果仍以当前上传的 SDS 为准。
 
-| QueryOID | FolderOID | FormOID | FieldOID | LogicText                                                          | NormalizedLogicText                                                                                                | 校验结果／程序处理 | Message | Error |
+| QueryOID | FolderOID | FormOID | FieldOID | LogicText                                                          | NormalizedLogicText                                                                                                | 校验结果 | Message | Error |
 | --- | --- | --- | --- |--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------| --- | --- | --- |
 | SV003 | SCN | SV | VISDAT | `SCN.VISDAT - V2.VISDAT < -28d or > -2d`                           | `SCN.SV.VISDAT - V2.SV.VISDAT < -28d or > -2d`                                                                     | 两个 `Folder.Field` 均补全 Form；双边访视窗 | The V1 visit date exceeded the window. | 否 |
 | SV004 | V1 | SV | VISDAT | `V1.VISDAT - V2.VISDAT <> -1d`                                     | `V1.SV.VISDAT - V2.SV.VISDAT <> -1d`                                                                               | 使用 `<>` 排除指定差值 | The V2(D-1) visit date exceeded the window. | 否 |

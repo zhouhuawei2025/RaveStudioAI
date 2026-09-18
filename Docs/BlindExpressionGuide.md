@@ -10,19 +10,16 @@
 
 | BlindOID | FolderOID | FormOID | FieldOID | LogicText |
 | --- | --- | --- | --- | --- |
-| B001 | V1 | DM | CHILDPOT | `SEX = 2` | `SEX = 2` |
-| B002 | V1 | DM | CHILDREA | `SEX = 2 and CHILDPOT = 2` | `SEX = 2 and CHILDPOT = 2` |
-| B003 | V1 | VS | TEMPMH | `TPCLSIG = 2 or TPCLSIG = 3` | `TPCLSIG = 2 or TPCLSIG = 3` |
-| B004 | V1 | VS | TEMPMH | `TPCLSIG = 2 or 3` | `TPCLSIG = 2 or 3` |
-| B005 | V1 | DM | CHILDREA | `SEX = 2 and CHILDPOT = 2, set CHILDREA visible` | `SEX = 2 and CHILDPOT = 2` |
-| B006 | V1 | DM | CHILDREA | `SEX = 2 and CHILDPOT = 2，激活 CHILDREA` | `SEX = 2 and CHILDPOT = 2` |
-| B007 | V1 | DM | CHILDREA | `SEX（same visit） = 2 and CHILDPOT = 2` | `SEX = 2 and CHILDPOT = 2` |
-| B008 | V1 | VS | TEMPMH | `(TPCLSIG = 2 or 3) and VSPERF = 1` | `(TPCLSIG = 2 or 3) and VSPERF = 1` |
-| B009 | V1 | DM | `CHILDPOT/CHILDREA` | `SEX = 2` | `SEX = 2` |
-| B010 | V1 | DM | CHILDREA | `CHILDPOT = 2` | `SEX = 2 and CHILDPOT = 2` |
+| B001 | V1 | DM | CHILDPOT | `SEX = 2` |
+| B002 | V1 | DM | CHILDREA | `CHILDPOT = 2` |
+| B003 | V1 | DM | CHILDREA | `SEX = 2 and CHILDPOT = 2, set CHILDREA visible` |
+| B004 | All visit | VS | TEMPMH | `TPCLSIG = 2 or TPCLSIG = 3` |
+| B005 | All visit | VS | TEMPMH | `TPCLSIG = 2 or 3` |
+| B006 | All visit | VS | TEMPMH/TEMPAE | `` |
+| B007 | SCN | MH | MHTERM/MHSTDAT/MHONGO | `MHYN = 1 and NOW is present` |
+| B007 | SCN | MH | MHENDAT | `MHONGO = 2` |
 
 
-表中的“留空”表示该示例没有错误或无法产生可靠建议。B010 只有在同一 Folder/Form 的上传数据中同时存在“`SEX = 2` 激活 `CHILDPOT`”时才会补全。B017 用于提醒：校验通过不等于真实激活链完整。
 
 ## 1. 最正规的写法
 
@@ -32,7 +29,7 @@ Blind 的每一行表示：在指定 Folder/Form 范围内，条件成立时激�
 
 ```text
 SEX = 2 and CHILDPOT = 2 and CHILDREA = 99
-(TPCLSIG = 2 or TPCLSIG = 3) and VSPERF = 1
+VSPERF = 1 and (TPCLSIG = 2 or TPCLSIG = 3)
 ```
 
 填写时建议：
@@ -104,18 +101,20 @@ TPCLSIG = 2 or 3 or 4
 
 ## 5. 激活链的自动补全
 
-假设同一 Folder、同一 Form 中上传了：
+假设上传的blind中，针对同一访视、同一表单，覆盖了从A到D的激活链：
 
 ```text
-A = 1  激活 B
-B = 1  激活 C
-C = 1  激活 D
+A = 1,  激活 B
+B = 1,  激活 C
+C = 1, 激活 D
 ```
 
-程序会自动补全“激活 D”的完整条件：
+程序会自动补全“激活B C D”的完整条件：
 
 ```text
-A = 1 and B = 1 and C = 1
+A = 1,  激活 B
+A= 1 and B = 1,  激活 C
+A = 1 and B = 1 and C = 1,  激活 D
 ```
 
 补全规则：
@@ -143,19 +142,7 @@ A 激活 B → B 激活 C → C 激活 D
 
 另外，程序也可能错误理解原本正确但较复杂的人工表达式。因此补全结果始终只是建议，不能直接当作生产逻辑。
 
-## 7. 程序会自动处理什么
-
-- 中文括号转为英文括号；
-- 删除 `(same visit)`、`(the same visit)`；
-- 接受简单的 `FIELD = 2 or 3`；
-- 校验括号、比较符、`and/or` 和条件完整性；
-- 校验条件字段和目标字段是否属于指定 Form；
-- 为可以确定的同访视、同表单激活链生成建议；
-- 某些行错误时继续处理其他可解析行。
-
-程序不会自动修改原始 `LogicText`。
-
-## 8. 出现笔误时会怎样
+## 7. 出现笔误时会怎样
 
 以下情况会显示错误并将行标红：
 
@@ -171,7 +158,7 @@ A 激活 B → B 激活 C → C 激活 D
 
 程序不会模糊猜测或自动改正 OID。用户可以取消错误勾选或强制生成，但生成器仍使用原始 `LogicText`。
 
-## 9. 推荐审阅流程
+## 8. 推荐审阅流程
 
 ```text
 上传 Blind 文件

@@ -8,7 +8,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Margin="0,0,0,20">
-            <TextBlock Text="CRF Builder" FontSize="28" FontWeight="SemiBold" Foreground="#26324A" />
+            <TextBlock Text="Field Builder" FontSize="28" FontWeight="SemiBold" Foreground="#26324A" />
             <TextBlock Text="从 CRF Word 提取 Forms、CodeLists 和 Fields。生成结果需要人工复核后，再从项目入口上传。"
                        Margin="0,7,0,0" Foreground="#6C7892" />
         </StackPanel>

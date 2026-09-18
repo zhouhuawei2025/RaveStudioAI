@@ -8,13 +8,13 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="60"/>
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="60"/>
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="60"/>
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="50"/>
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="120"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="当前选择:" VerticalAlignment="Center"/>
@@ -40,14 +40,17 @@
         <TabControl Grid.Row="1" Style="{StaticResource TabControlInLine}">
             <TabItem Header="数据查询">
                 <Grid Margin="8">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="250"/><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="200"/><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="4,4,16,4">
                             <TextBlock Text="试验" FontWeight="Bold"/>
                             <ComboBox x:Name="StudyComboBox" Margin="0,6,0,12" DisplayMemberPath="DisplayName" SelectionChanged="StudyComboBox_SelectionChanged"/>
                             <TextBlock Text="环境" FontWeight="Bold"/>
                             <TextBox x:Name="EnvironmentTextBox" Margin="0,6,0,12"/>
-                            <DockPanel><TextBlock Text="受试者" FontWeight="Bold"/><Button Content="全选/取消" DockPanel.Dock="Right" Click="ToggleSubjects_Click"/></DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="受试者" FontWeight="Bold"/>
+                                <Button Content="全选/取消" DockPanel.Dock="Right" Click="ToggleSubjects_Click"/>
+                            </DockPanel>
                             <TextBox x:Name="SubjectSearchTextBox" Margin="0,6,0,0" ToolTip="输入受试者编号筛选" TextChanged="SubjectSearchTextBox_TextChanged"/>
                             <ListBox x:Name="SubjectListBox" Height="190" Margin="0,6,0,12">
                                 <ListBox.ItemTemplate><DataTemplate><CheckBox Content="{Binding SubjectKey}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/></DataTemplate></ListBox.ItemTemplate>
@@ -93,7 +96,7 @@
                             <TextBox x:Name="DatasetFilterTextBox" ToolTip="示例：AEYN = '1' and AESEV in ('1','2')"/>
                         </DockPanel>
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Text="预览表单：" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text="数据预览：" FontWeight="Bold" VerticalAlignment="Center"/>
                             <ComboBox x:Name="PreviewFormComboBox" Width="160" DisplayMemberPath="Header"
                                       SelectionChanged="PreviewFormComboBox_SelectionChanged"/>
                             <hc:Pagination x:Name="PreviewPagination" Margin="12,0,0,0" DataCountPerPage="50"

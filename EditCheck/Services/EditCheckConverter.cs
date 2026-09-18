@@ -181,7 +181,7 @@ public static class EditCheckConverter
         var record = field.IsLog ? "" : "0";
         return type switch
         {
-            "Field" => $"||StandardValue|{field.VariableOid}|{folder}|{form}|{field.FieldOid}|{record}||||||",
+            "Field" => field.FieldOid == "NOW" ? $"||DataPoint|{field.VariableOid}|{folder}|{form}|{field.FieldOid}|{record}||||||" :  $"||StandardValue|{field.VariableOid}|{folder}|{form}|{field.FieldOid}|{record}||||||",
             "IsPresent" => $"{folder}|{form}|{field.FieldOid}|{field.VariableOid}|{record}||||||IsPresent||0||",
             "SetDataPointVisible" => $"{folder}|{form}|{field.FieldOid}|{field.VariableOid}|{record}||||||SetDataPointVisible||TRUE,FALSE||",
             "OpenQuery" => $"{folder}|{form}|{field.FieldOid}|{field.VariableOid}|{record}||||||OpenQuery|{message}|Site from System,RequiresResponse,RequiresManualClose||",
